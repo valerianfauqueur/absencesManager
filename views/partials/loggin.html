@@ -1,0 +1,10 @@
+<div class="login">
+   <div class="logo"></div>
+     <form name="loginForm" ng-submit="loginCtrl.login(loginCtrl.user)" novalidate>
+        <input ng-model="loginCtrl.user.username" type="text" name="username" id="username" placeholder="E-mail">
+        <input ng-model="loginCtrl.user.password" type="password" name="password" id="password" placeholder="Password">
+        <input type="submit" value="SE CONNECTER">
+        <a>Mot de passe oublié ?</a><br>
+        <div ng-show="loginCtrl.error" class="error">{{loginCtrl.errorMessage}}</div>
+    </form>
+</div>
