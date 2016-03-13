@@ -7,11 +7,13 @@ angular.module('absencesManager', ["ngRoute"]).
     });
     $routeProvider
         .when("/", {
-            templateUrl: "partials/home.html",
+            templateUrl:"partials/home.html",
+            controller:"absenceController",
+            controllerAs:"absenceCtrl",
             access: {restricted: false}
         })
         .when("/login", {
-            templateUrl: "partials/loggin.html",
+            templateUrl:"partials/loggin.html",
             controller:"loginCtrl",
             controllerAs:"loginCtrl",
             access: {restricted: false}
@@ -36,7 +38,12 @@ angular.module('absencesManager', ["ngRoute"]).
 angular.module("absencesManager").run(function ($rootScope, $location, $route, AuthService) {
   $rootScope.$on('$routeChangeStart',
     function (event, next, current) {
-      AuthService.getUserStatus().catch(function(data){
+      AuthService.getUserStatus().then(function(){
+        if(next.originalPath="/login")
+        {
+            $location.path('/');
+        }
+      }).catch(function(data){
         $location.path('/login');
       })
 
@@ -44,9 +51,10 @@ angular.module("absencesManager").run(function ($rootScope, $location, $route, A
       if(next.access.restricted)
       {
           //if user is not admin redirect
-           AuthService.isAdmin().catch(function(data){
-                $location.path('/');
-          });
+          if(AuthService.isAdmin() === false)
+          {
+              $location.path('/');
+          }
       }
   });
 });

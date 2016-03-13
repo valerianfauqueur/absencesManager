@@ -1,9 +1,9 @@
            <form name="registrationForm" ng-submit="registrationForm.$valid && userCreation.addUser(userCreation.user)" novalidate>
                 <input ng-model="userCreation.user.username" type="email" name="username" placeholder="E-mail" required>
                 <input ng-model="userCreation.user.password" type="password" name="password" placeholder="Password" required>
-                <select ng-model="userCreation.user.type" name="type" required>
+                <select ng-model="userCreation.user.type" ng-init="userCreation.user.type='student'" name="type" required>
                     <option value="admin">Admin</option>
-                    <option value="student">Student</option>
+                    <option value="student" ng-selected="true">Student</option>
                 </select>
                 <input ng-model="userCreation.user.promotion" type="text" name="promotion" placeholder="Promotion - XXXX">
                 <input ng-model="userCreation.user.group" type="text" name="group" placeholder="Groupe - GXX">

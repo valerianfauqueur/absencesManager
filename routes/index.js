@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var Account = require('../models/account_model');
+var Schedule = require('../models/schedule_model');
 
 var path = require('path');
 
@@ -108,6 +109,94 @@ router.get('/admin', function(req, res) {
 
 
 // END AUTHENTIFICATION
+
+
+//START USER DATA
+
+
+function getUserData(mail)
+{
+    Account.find({ username:mail }, function(err,result){
+        if(err)
+        {
+            return false;
+        }
+        return result[0];
+    });
+}
+
+function getUserShedule(promo)
+{
+        Shedule.find({ promotion:promo }, function(err,result){
+        if(err)
+        {
+            return false;
+        }
+        else
+        {
+            return result;
+        }
+    });
+}
+function getDay(date)
+{
+    var fullDate =date.toDateString();
+    var day = fullDate.substr(0,3).toLowerCase;
+    return "mon";
+}
+router.get('/user/currentCourse', function(req, res) {
+    if(req.isAuthenticated())
+    {
+        Account.find({ username:req.session.passport.user }, function(err,result){
+            if(err)
+            {
+                return false;
+            }
+            console.log(result[0].promotion);
+            Schedule.find({ promotion:result[0].promotion }, function(err,result2){
+                if(err)
+                {
+                    return false;
+                }
+                    currentTime = new Date(),
+                    hours = currentTime.getHours(),
+                    min = currentTime.getMinutes();
+                    if(min <10)
+                    {
+                        min = "0"+min;
+                    }
+                    if(hours <10)
+                    {
+                        hours = "0"+hours;
+                    }
+                var time = parseInt(hours +""+ min);
+                console.log(time);
+                var day = getDay(currentTime);
+                console.log(result2[0][day][0].start);
+                for(var i = 0, l = result2[0][day].length; i < l;i++)
+                {
+                    if(time >= result2[0][day][0].start && time <=result2[0][day][0].end)
+                    {
+                        res.status(200).json({
+                            course: result2[0][day][i].course
+                        });
+                    }
+                }
+//                if(result2.length == 0)
+//                {
+//                    res.status(200).json({
+//                        course: "aucun cours"
+//                    });
+                }
+            });
+        });
+    }
+    else
+    {
+        console.log("obj");
+        res.redirect("/");
+    }
+});
 
 router.get("/", function(req, res){
   res.sendFile("index.html", {root: "./views"});

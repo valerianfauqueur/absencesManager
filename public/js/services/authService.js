@@ -14,6 +14,14 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
             }
         }
 
+        function isAdmin() {
+            if (admin) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         function getUserStatus() {
             console.log("hey");
             var defered = $q.defer();
@@ -49,6 +57,7 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
                 .success(function (data, status) {
                     if (status === 200 && data.status) {
                         user = true;
+                        checkIfAdmin();
                         deferred.resolve();
                     } else {
                         user = false;
@@ -65,6 +74,7 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
             return deferred.promise;
         }
 
+
         function logout() {
             // create a new instance of deferred
             var deferred = $q.defer();
@@ -74,11 +84,13 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
                 // handle success
                 .success(function (data) {
                     user = false;
+                    admin = false;
                     deferred.resolve();
                 })
                 // handle error
                 .error(function (data) {
                     user = false;
+                    admin = false;
                     deferred.reject();
                 });
 
@@ -87,7 +99,7 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
         }
 
 
-        function isAdmin() {
+        function checkIfAdmin() {
             var defered = $q.defer();
             if (isLoggedIn() === true) {
                 $http.get("/admin")
@@ -115,7 +127,8 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
             getUserStatus: getUserStatus,
             login: login,
             logout: logout,
-            isAdmin: isAdmin
+            isAdmin: isAdmin,
+            isLoggedIn: isLoggedIn
         });
 
 }]);

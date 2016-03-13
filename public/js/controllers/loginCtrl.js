@@ -1,7 +1,6 @@
 'use strict';
 angular.module('absencesManager').controller('loginCtrl',["AuthService","$scope","$location", function(AuthService,$scope,$location) {
     var controller = this;
-    this.dog = "woaf";
     this.login = function(user)
     {
         controller.error = false;

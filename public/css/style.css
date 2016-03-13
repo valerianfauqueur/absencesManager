@@ -89,3 +89,59 @@ form input.ng-dirty.ng-invalid
     font-weight: bold;
 }
 
+
+/*NAV BAR*/
+
+nav
+{
+    height: 60px;
+    width:100%;
+    background-color: #1a9f57;
+}
+
+nav ul
+{
+    height: inherit;
+    display: flex;
+    flex-flow: row wrap;
+    align-items:center;
+    justify-content: space-between;
+    margin-left:20px;
+    margin-right:20px;
+    list-style: none;
+}
+
+nav ul li
+{
+    margin-right:20px;
+}
+
+.flexend {
+    margin-left:auto;
+    display: block;
+}
+
+nav ul li
+{
+    color:white;
+}
+
+/*HOME*/
+h2
+{
+    color:white;
+    font-size:48px;
+    font-family: "Arial",sans-serif;
+    text-align: center;
+}
+
+.course-info {
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+}
+
+canvas
+{
+    background-color: white;
+}

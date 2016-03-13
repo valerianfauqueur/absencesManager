@@ -1,5 +1,18 @@
-<h1 style="color:white">Connected</h1>
-<a href="/inscription">inscription</a>
-<div ng-controller="logoutController">
-<a ng-click="logout()">logout</a>
+<div ng-controller="navController as navCtrl">
+   <div class="course-info" ng-show="navCtrl.isFormStep(1)">
+        <h2>Bonjour,<br> vous êtes actuellement en cours de :<br>
+        {{absenceCtrl.currentCourse}}</h2>
+        <button type="button" class="btn btn-primary btn-lg" ng-click="absenceCtrl.getCurrentCourse()">Valider ma présence</button>
+    </div>
+
+    <div class="course-info" ng-show="navCtrl.isFormStep(2)">
+        <canvas width="800" height="600">
+            Votre navigateur ne supporte pas canvas
+        </canvas>
+    </div>
+
+    <div class="course-info" ng-show="navCtrl.isFormStep(3)">
+        <h2>Bonjour,<br> vous êtes actuellement en cours de :<br>Ingénieurie informatique</h2>
+        <button type="button" class="btn btn-primary btn-lg">Valider ma présence</button>
+    </div>
 </div>
