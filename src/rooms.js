@@ -26,15 +26,17 @@ var rooms_manager = {
         var takenSeats = new Array();
         for(var i=0,l=this.rooms[id].users.length;i<l;i++)
         {
-            if(this.rooms[id].users[i].seats !== null)
+            if(this.rooms[id].users[i].seat !== null)
             {
+                console.log("here");
                 if(this.rooms[id].users[i].username !== username)
                 {
-                    takenSeats.push(this.rooms[id].users[i].seats);
+                    console.log("hey"+this.rooms[id].users[i].seat);
+                    takenSeats.push(this.rooms[id].users[i].seat);
                 }
             }
         }
-        if(takenSeats.length >0)
+        if(takenSeats.length>0)
         {
             return takenSeats;
         }

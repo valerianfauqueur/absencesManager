@@ -162,15 +162,6 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
     });
 
-    socket.on('room:AllSeatTaken', function(seats){
-        for(var i=0,l=seats.length;i<l;i++)
-        {
-            var seat = seats[seat];
-            seat.taked = true;
-            ctx.fillStyle = "blue";
-            ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
-        }
-    });
 
     socket.on('room:MySeat', function(seat){
             var seat = seats[seat];
@@ -187,6 +178,15 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
             },3000);
     });
 
+    socket.on('room:AllSeatTaken', function(ids){
+        for(var i=0,l=ids.length;i<l;i++)
+        {
+            var seat = seats[ids];
+            seat.taked = true;
+            ctx.fillStyle = "black";
+            ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
+        }
+    });
 
 
 

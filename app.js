@@ -54,38 +54,24 @@ io.on('connection',function(socket){
             rooms_manager.createRoom(roomName);
         }
         socket.join(roomName);
-        user.state = {}
         rooms_manager.addUserToRoom(roomName, user);
-        if(rooms_manager.countUserInRoom(roomName)>=1)
-        {
-            var accounts = database_manager.getAccounts(user.group,user.promotion);
-            accounts.then(function(data){
-                if(rooms_manager.getRoomState(roomName) === "inprogress")
+        var accounts = database_manager.getAccounts(user.group,user.promotion);
+        rooms_manager.startRoom(roomName);
+        accounts.then(function(data){
+            socket.emit('room:start',data.length);
+            if(rooms_manager.getRoomState(roomName) === "inprogress")
+            {
+                if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
                 {
-                    socket.emit('room:start',data.length);
-                    console.log("hey"+rooms_manager.getRoomsTakenSeats(roomName,user.username));
-                    if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
-                    {
-                        socket.emit("room:AllSeatTaken",rooms_manager.getRoomsTakenSeats(roomName,user.username));
-                    }
-                    console.log("hi" + rooms_manager.userSeatIsAlreadySet(roomName,user.username));
-                    if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
-                    {
-                        console.log("sending my seat");
-                        socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
-                    }
+                    var seatsInfo = rooms_manager.getRoomsTakenSeats(roomName,user.username);
+                    socket.emit("room:AllSeatTaken",seatsInfo);
                 }
-                else if(rooms_manager.getRoomState(roomName) === "waiting")
+                if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
                 {
-                    rooms_manager.startRoom(roomName);
-                    io.in(roomName).emit('room:start', data.length);
+                    socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
                 }
-            });
-        }
-        else
-        {
-            io.in(roomName).emit("room:wait", rooms_manager.countUserInRoom(roomName));
-        }
+            }
+        });
     });
 
     socket.on("room:setseat", function(user,seat){
@@ -111,6 +97,7 @@ io.on('connection',function(socket){
         {
             socket.emit("room:seatAlreadyUsed");
         }
+
     });
 
 
