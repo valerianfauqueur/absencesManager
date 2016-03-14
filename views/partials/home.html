@@ -1,11 +1,12 @@
-<div ng-controller="navController as navCtrl">
+<div ng-controller="navController as navCtrl" ng-init="absenceCtrl.getData()">
    <div class="course-info" ng-show="navCtrl.isFormStep(1)">
-        <h2>Bonjour,<br> vous êtes actuellement en cours de :<br>
-        {{absenceCtrl.currentCourse}}</h2>
-        <button type="button" class="btn btn-primary btn-lg" ng-click="absenceCtrl.getCurrentCourse()">Valider ma présence</button>
+        <h2>Bonjour, {{account.username}}<br> vous êtes actuellement en cours de :<br>
+        {{account.currentCourse}}</h2>
+        <button type="button" class="btn btn-primary btn-lg" ng-click="navCtrl.setFormStep(2);absenceCtrl.joinList()">Valider ma présence</button>
     </div>
 
     <div class="course-info" ng-show="navCtrl.isFormStep(2)">
+       <h3 class="message"></h3>
         <canvas width="800" height="600">
             Votre navigateur ne supporte pas canvas
         </canvas>

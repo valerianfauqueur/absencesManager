@@ -28,9 +28,6 @@ angular.module('absencesManager', ["ngRoute"]).
             controller:"logoutController",
             access: {restricted: false}
         })
-        .otherwise({
-            redirectTo: '/'
-        })
   }]);
 
 
@@ -39,7 +36,8 @@ angular.module("absencesManager").run(function ($rootScope, $location, $route, A
   $rootScope.$on('$routeChangeStart',
     function (event, next, current) {
       AuthService.getUserStatus().then(function(){
-        if(next.originalPath="/login")
+          console.log(next.$$route.originalPath);
+        if(next.$$route.originalPath == "/login")
         {
             $location.path('/');
         }
@@ -51,10 +49,10 @@ angular.module("absencesManager").run(function ($rootScope, $location, $route, A
       if(next.access.restricted)
       {
           //if user is not admin redirect
-          if(AuthService.isAdmin() === false)
-          {
-              $location.path('/');
-          }
+          AuthService.isAdmin().then(function(){
+          }).catch(function(){
+            $location.path('/');
+          });
       }
   });
 });

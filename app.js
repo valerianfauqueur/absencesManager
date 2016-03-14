@@ -1,8 +1,11 @@
 var express = require('express'),
   routes = require('./routes/index');
 var bodyParser = require('body-parser');
-
 var app = module.exports = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var rooms_manager = require("./src/rooms.js");
+var database_manager = require("./src/database.js");
 
 //Authentification using passport
 var passport = require('passport');
@@ -41,6 +44,79 @@ mongoose.connect('mongodb://localhost/absencesApp', function(err) {
     }
 });
 
+//Real time communication
+io.on('connection',function(socket){
+
+    socket.on("readyToJoin", function(user){
+        var roomName = user.promotion + user.group;
+        if(!rooms_manager.roomExist(roomName))
+        {
+            rooms_manager.createRoom(roomName);
+        }
+        socket.join(roomName);
+        user.state = {}
+        rooms_manager.addUserToRoom(roomName, user);
+        if(rooms_manager.countUserInRoom(roomName)>=1)
+        {
+            var accounts = database_manager.getAccounts(user.group,user.promotion);
+            accounts.then(function(data){
+                if(rooms_manager.getRoomState(roomName) === "inprogress")
+                {
+                    socket.emit('room:start',data.length);
+                    console.log("hey"+rooms_manager.getRoomsTakenSeats(roomName,user.username));
+                    if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
+                    {
+                        socket.emit("room:AllSeatTaken",rooms_manager.getRoomsTakenSeats(roomName,user.username));
+                    }
+                    console.log("hi" + rooms_manager.userSeatIsAlreadySet(roomName,user.username));
+                    if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
+                    {
+                        console.log("sending my seat");
+                        socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
+                    }
+                }
+                else if(rooms_manager.getRoomState(roomName) === "waiting")
+                {
+                    rooms_manager.startRoom(roomName);
+                    io.in(roomName).emit('room:start', data.length);
+                }
+            });
+        }
+        else
+        {
+            io.in(roomName).emit("room:wait", rooms_manager.countUserInRoom(roomName));
+        }
+    });
+
+    socket.on("room:setseat", function(user,seat){
+
+        var roomName = user.promotion + user.group;
+        var isFree = rooms_manager.isRoomSeatFree(roomName,user.username,seat);
+        console.log(isFree);
+        if(isFree === true)
+        {
+            rooms_manager.roomTakeSeat(roomName,user.username,seat);
+            socket.broadcast.to(roomName).emit('room:seatTaken', seat);
+            socket.emit("room:seatTakenByYou", seat);
+        }
+        else if (isFree === "Youtookit")
+        {
+            socket.emit("room:seatAlreadyUsedByYou");
+        }
+        else if (isFree === "alreadyHave")
+        {
+            socket.emit("room:seatAlreadySet")
+        }
+        else
+        {
+            socket.emit("room:seatAlreadyUsed");
+        }
+    });
+
+
+
+});
+
 
 // development error handler
 // will print stacktrace
@@ -72,6 +148,6 @@ app.use('/partials/:name', routes);
 
 app.use('*', routes);
 
-app.listen(3000, function(){
-  console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+http.listen(3000, function(){
+  console.log("Listening on port 3000");
 });

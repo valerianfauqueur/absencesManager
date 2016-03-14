@@ -1,6 +1,6 @@
 'use strict';
-angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$http',
-    function ($q, $timeout, $http) {
+angular.module('absencesManager').factory('AuthService', ['$q', '$rootScope', '$http',
+    function ($q, $rootScope, $http) {
 
         // create user variable
         var user = null;
@@ -14,22 +14,12 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
             }
         }
 
-        function isAdmin() {
-            if (admin) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
         function getUserStatus() {
-            console.log("hey");
             var defered = $q.defer();
             $http.get('/status')
                 .success(function(data) {
                     if (data.status) {
                         user = true;
-                        console.log("hey");
                         defered.resolve(user);
                     } else {
                         user = false;
@@ -57,7 +47,6 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
                 .success(function (data, status) {
                     if (status === 200 && data.status) {
                         user = true;
-                        checkIfAdmin();
                         deferred.resolve();
                     } else {
                         user = false;
@@ -85,12 +74,14 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
                 .success(function (data) {
                     user = false;
                     admin = false;
+                    $rootScope.account = {};
                     deferred.resolve();
                 })
                 // handle error
                 .error(function (data) {
                     user = false;
                     admin = false;
+                    $rootScope.account = {};
                     deferred.reject();
                 });
 
@@ -99,7 +90,7 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$timeout', '$ht
         }
 
 
-        function checkIfAdmin() {
+        function isAdmin() {
             var defered = $q.defer();
             if (isLoggedIn() === true) {
                 $http.get("/admin")

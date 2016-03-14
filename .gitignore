@@ -34,3 +34,6 @@ node_modules
 
 #database
 data
+
+#libs
+lib
