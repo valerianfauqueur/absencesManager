@@ -21,6 +21,8 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     var alreadyRedrawed = true;
     var Collide = false;
     var canvasClick;
+    var socket = io.connect();
+
 
 
     this.getData = function()
@@ -116,7 +118,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     }
 
     socket.on("room:start", function(numberOfSeat){
-    messagebox.innerText = "Veuillez indiquer votre position sur le schéma"
+    messagebox.innerText = "Veuillez indiquer votre position sur le schéma";
     var o = seatsParams, z, seatsRow,perRow;
     perRow = Math.floor(((canvas.width-o.canvasOffsetX)/o.spaceBetweenX));
        for(var i = 0; i < numberOfSeat;i++)
@@ -131,27 +133,27 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
 
 
     socket.on("room:wait", function(numberOfUsers){
-        messagebox.innerText = "Il y a " + numberOfUsers + " étudiants prêt(s). Attente de plus d'étudiants";
+        messagebox.innerHTML = "Il y a " + numberOfUsers + " étudiants prêt(s). Attente de plus d'étudiants";
     });
 
     socket.on('room:seatTakenByYou', function(seat){
-        messagebox.innerText = "Présence en attende de validation par un autre Etudiant"
+        messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant"
         var seat = seats[seat];
         ctx.fillStyle = "orange";
         ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
     });
 
     socket.on('room:seatAlreadyUsedByYou', function(){
-        messagebox.innerText = "Vous avez déjà selectionnez ce siège, attendez qu'un Etudiant valide votre présence";
+        messagebox.innerHTML = "Vous avez déjà selectionnez ce siège, attendez qu'un Etudiant valide votre présence";
         setTimeout(function(){
-            messagebox.innerText = "Présence en attende de validation par un autre Etudiant";
+            messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant";
         },3000);
     });
 
     socket.on('room:seatAlreadyUsed', function(){
         messagebox.innerText = "Ce siège était déjà pris, veuillez en choisir un autre";
         setTimeout(function(){
-            messagebox.innerText = "Veuillez indiquer votre position sur le schéma";
+            messagebox.innerHTML = "Veuillez indiquer votre position sur le schéma";
         },3000);
     });
 
@@ -174,19 +176,54 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         socket.on('room:seatAlreadySet', function(){
             messagebox.innerText = "Vous avez déjà selectionnez un autre siège, attendez qu'un Etudiant valide votre présence";
             setTimeout(function(){
-                messagebox.innerText = "Présence en attende de validation par un autre Etudiant";
+                messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant";
             },3000);
     });
 
-    socket.on('room:AllSeatTaken', function(ids){
-        for(var i=0,l=ids.length;i<l;i++)
+    socket.on('room:AllSeatTaken', function(seatTaken){
+        for(var i=0,l=seatTaken.length;i<l;i++)
         {
-            var seat = seats[ids];
+            var seat = seats[seatTaken[i]];
             seat.taked = true;
             ctx.fillStyle = "black";
             ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
         }
     });
+
+    socket.on('room:usertocheck', function(user){
+            console.log(user.seat);
+            console.log(seats);
+            var seat = seats[user.seat];
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
+            messagebox.innerHTML = "Veuillez confirmer la présence de " +user.username +" avant de continuer\n<button class='btn btn-success' id='validatebtn'>YES</button><button class='btn btn-danger' id='conflictbtn'>NO</button>";
+            $(".course-info .message").on("click","#validatebtn", function(e){
+                controller.checkUser(true);
+            });
+           $(".course-info .message").on("click","#conflictbtn", function(e){
+               controller.checkUser(false);
+           });
+    });
+
+
+    this.checkUser = function(answer)
+    {
+        if(answer === true)
+        {
+            socket.emit("room:validateuser", scope.account,"yes");
+            messagebox.innerHTML = "Vous avez fini ! Votre statut sera pris en compte ! Si votre statut ne correspond à la fin du timer allez voir l'intervenant";
+        }
+        else if (answer === false)
+        {
+            socket.emit("room:validateuser", scope.account,"no");
+            messagebox.innerHTML = "Vous avez fini ! Votre statut sera pris en compte ! Si votre statut ne correspond à la fin du timer allez voir l'intervenant";
+        }
+        else
+        {
+            messagebox.innerHTML = "réponse non valide";
+        }
+    }
+
 
 
 

@@ -28,16 +28,15 @@ var rooms_manager = {
         {
             if(this.rooms[id].users[i].seat !== null)
             {
-                console.log("here");
                 if(this.rooms[id].users[i].username !== username)
                 {
-                    console.log("hey"+this.rooms[id].users[i].seat);
                     takenSeats.push(this.rooms[id].users[i].seat);
                 }
             }
         }
         if(takenSeats.length>0)
         {
+            console.log(takenSeats);
             return takenSeats;
         }
         else
@@ -100,15 +99,19 @@ var rooms_manager = {
         this.rooms[id].state = "inprogress";
     },
 
-    delete: function(id)
+    deleteRoom: function(id)
     {
         delete this.rooms[id];
     },
 
     /* user gestion */
-    addUserToRoom: function(id, user)
+    addUserToRoom: function(id, user, socketid)
     {
+        user.state = false;
         user.seat = null;
+        user.socketid = socketid;
+        user.userToValidate = false;
+        user.hasValidatedUser = false;
         this.rooms[id].users.push(user);
     },
 
@@ -117,24 +120,119 @@ var rooms_manager = {
         return this.rooms[id].users.length;
     },
 
-    getRandomUserInRoom: function(id)
+    getRandomUserToValidate: function(id,username)
     {
-        var numberOfUsers = countUserInRoom(id);
-        return this.rooms[id].users[(Math.floor(Math.random()*numberOfUsers))];
+        var usersToValidate = this.getUsersToValidate(id);
+        var usersToValidateMinusYou = [];
+        for(var i = 0, l=usersToValidate.length; i<l;i++)
+        {
+            if(usersToValidate[i].state === "toValidate")
+            {
+                if(usersToValidate[i].username !== username)
+                {
+                    usersToValidateMinusYou.push(usersToValidate[i]);
+                }
+            }
+        }
+        var random = Math.floor(Math.random()*usersToValidateMinusYou.length);
+        var randomUserToValidate = usersToValidateMinusYou[random];
+        return randomUserToValidate;
     },
 
-    getUsersInRoom: function(id)
+    getUsersToValidate: function(id)
     {
-        return this.rooms[id].users;
+        var usersToValidate = [];
+        for(var i =0,l=this.countUserInRoom(id);i<l;i++)
+        {
+            if(this.getUserState(id,this.rooms[id].users[i].username) === "toValidate")
+            {
+                usersToValidate.push(this.rooms[id].users[i]);
+            }
+        }
+        return usersToValidate;
     },
 
-    userAlreadyInRoom: function(id,user)
+    getUserState: function(id,username)
     {
         for(var i=0,l=this.rooms[id].users.length;i<l;i++)
         {
-            if(user.username == this.rooms[id].users[i])
+            if(this.rooms[id].users[i].username === username)
+            {
+                return this.rooms[id].users[i].state;
+            }
+        }
+    },
+
+    setUserState: function(id,username,state)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(this.rooms[id].users[i].username === username)
+            {
+                this.rooms[id].users[i].state = state;
+            }
+        }
+    },
+
+    setUserToValidate: function(id,me,user)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(this.rooms[id].users[i].username === me)
+            {
+                this.rooms[id].users[i].userToValidate = user.username;
+            }
+        }
+    },
+
+
+    hasValidatedUser: function(id,me)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(this.rooms[id].users[i].username === me)
+            {
+                this.rooms[id].users[i].hasValidatedUser = true;
+            }
+        }
+    },
+
+    getTheUserToValidate: function(id,me)
+    {
+        var me = this.getUser(id,me);
+        return me.userToValidate;
+    },
+
+    userAlreadyInRoom: function(id,username)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(username === this.rooms[id].users[i].username)
             {
                 return true;
+            }
+        }
+        return false;
+    },
+
+    userResetSocket: function(id,username,socket)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(username === this.rooms[id].users[i].username)
+            {
+                this.rooms[id].users[i].socketid = socket;
+            }
+        }
+    },
+
+    getUser(id,username)
+    {
+        for(var i=0,l=this.rooms[id].users.length;i<l;i++)
+        {
+            if(username === this.rooms[id].users[i].username)
+            {
+                return this.rooms[id].users[i];
             }
         }
         return false;

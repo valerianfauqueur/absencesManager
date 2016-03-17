@@ -36,7 +36,6 @@ angular.module("absencesManager").run(function ($rootScope, $location, $route, A
   $rootScope.$on('$routeChangeStart',
     function (event, next, current) {
       AuthService.getUserStatus().then(function(){
-          console.log(next.$$route.originalPath);
         if(next.$$route.originalPath == "/login")
         {
             $location.path('/');

@@ -46,7 +46,6 @@ mongoose.connect('mongodb://localhost/absencesApp', function(err) {
 
 //Real time communication
 io.on('connection',function(socket){
-
     socket.on("readyToJoin", function(user){
         var roomName = user.promotion + user.group;
         if(!rooms_manager.roomExist(roomName))
@@ -54,7 +53,21 @@ io.on('connection',function(socket){
             rooms_manager.createRoom(roomName);
         }
         socket.join(roomName);
-        rooms_manager.addUserToRoom(roomName, user);
+        var checkIfExist = rooms_manager.userAlreadyInRoom(roomName,user.username);
+        console.log("check" +checkIfExist);
+        if(checkIfExist === true)
+        {
+            rooms_manager.userResetSocket(roomName,user.username,socket.id);
+            var userToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
+            if(userToValidate !== false)
+            {
+                userToValidate = rooms_manager.getUser(roomName,userToValidate);
+            }
+        }
+        else
+        {
+            rooms_manager.addUserToRoom(roomName, user,socket.id);
+        }
         var accounts = database_manager.getAccounts(user.group,user.promotion);
         rooms_manager.startRoom(roomName);
         accounts.then(function(data){
@@ -70,6 +83,11 @@ io.on('connection',function(socket){
                 {
                     socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
                 }
+
+                 if(userToValidate)
+                 {
+                     socket.emit("room:usertocheck",userToValidate);
+                 }
             }
         });
     });
@@ -78,12 +96,35 @@ io.on('connection',function(socket){
 
         var roomName = user.promotion + user.group;
         var isFree = rooms_manager.isRoomSeatFree(roomName,user.username,seat);
-        console.log(isFree);
         if(isFree === true)
         {
             rooms_manager.roomTakeSeat(roomName,user.username,seat);
+            rooms_manager.setUserState(roomName,user.username,"toValidate");
             socket.broadcast.to(roomName).emit('room:seatTaken', seat);
             socket.emit("room:seatTakenByYou", seat);
+            var numberOfUserToValidate = rooms_manager.getUsersToValidate(roomName);
+            if(numberOfUserToValidate.length >=2)
+            {
+                for(var i =0; i < numberOfUserToValidate.length;i++)
+                {
+                    var rUserToValidate = rooms_manager.getRandomUserToValidate(roomName,numberOfUserToValidate[i].username);
+                    if(socket.id === numberOfUserToValidate[i].socketid)
+                    {
+                        rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
+                        rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
+                        socket.emit("room:usertocheck",rUserToValidate);
+                        console.log(socket.id + "local send");
+                    }
+                    else if (socket.id !== numberOfUserToValidate[i].socketid)
+                    {
+                        rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
+                        rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
+                        console.log(socket.id + "send");
+                        console.log(numberOfUserToValidate[i].socketid);
+                        socket.broadcast.to(numberOfUserToValidate[i].socketid).emit("room:usertocheck",rUserToValidate);
+                    }
+                }
+            }
         }
         else if (isFree === "Youtookit")
         {
@@ -101,6 +142,27 @@ io.on('connection',function(socket){
     });
 
 
+    socket.on("room:validateuser", function(user,answer){
+        console.log("here");
+        var roomName = user.promotion + user.group;
+        var userHeHasToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
+        rooms_manager.hasValidatedUser(roomName,user.username);
+        if(answer === "yes")
+        {
+            rooms_manager.setUserState(roomName,userHeHasToValidate,"Validated");
+            console.log("did it");
+        }
+        else if(answer === "no")
+        {
+            rooms_manager.setUserState(roomName,userHeHasToValidate,"Conflict");
+            console.log("did it but conflict");
+        }
+    });
+
+    socket.on("room:end", function(room){
+
+        rooms_manager.deleteRoom(roomName);
+    });
 
 });
 
