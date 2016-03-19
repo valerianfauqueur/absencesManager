@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var Schedule = new mongoose.Schema({
   promotion: Number,
+  group:String,
   mon: Array,
   tus: Array,
   wed: Array,

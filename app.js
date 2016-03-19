@@ -6,10 +6,27 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var rooms_manager = require("./src/rooms.js");
 var database_manager = require("./src/database.js");
+var CronJob = require('cron').CronJob;
 
 //Authentification using passport
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+
+
+//bind arguments without this
+
+Function.prototype.arg = function() {
+    if (typeof this !== "function")
+        throw new TypeError("Function.prototype.arg needs to be called on a function");
+    var slice = Array.prototype.slice,
+        args = slice.call(arguments),
+        fn = this,
+        partial = function() {
+            return fn.apply(this, args.concat(slice.call(arguments)));
+        };
+    partial.prototype = Object.create(this.prototype);
+    return partial;
+};
 
 app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);
@@ -24,7 +41,6 @@ app.use(require('express-session')({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(__dirname + '/public'));
-
 
 
 //Settings passport
@@ -46,125 +62,222 @@ mongoose.connect('mongodb://localhost/absencesApp', function(err) {
 
 //Real time communication
 io.on('connection',function(socket){
+
+
+
     socket.on("readyToJoin", function(user){
-        var roomName = user.promotion + user.group;
-        if(!rooms_manager.roomExist(roomName))
+        var group = user.group.substr(0,2);
+        var roomName = user.promotion + group;
+        var roomExist = rooms_manager.roomExist(roomName);
+        if(roomExist === false)
         {
-            rooms_manager.createRoom(roomName);
-        }
-        socket.join(roomName);
-        var checkIfExist = rooms_manager.userAlreadyInRoom(roomName,user.username);
-        console.log("check" +checkIfExist);
-        if(checkIfExist === true)
-        {
-            rooms_manager.userResetSocket(roomName,user.username,socket.id);
-            var userToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
-            if(userToValidate !== false)
-            {
-                userToValidate = rooms_manager.getUser(roomName,userToValidate);
-            }
+            console.log("la room existe "+roomExist);
+            socket.emit("room:notcreated")
         }
         else
         {
-            rooms_manager.addUserToRoom(roomName, user,socket.id);
-        }
-        var accounts = database_manager.getAccounts(user.group,user.promotion);
-        rooms_manager.startRoom(roomName);
-        accounts.then(function(data){
-            socket.emit('room:start',data.length);
-            if(rooms_manager.getRoomState(roomName) === "inprogress")
+            var roomState = rooms_manager.getRoomState(roomName);
+            socket.join(roomName);
+            var checkIfExist = rooms_manager.userAlreadyInRoom(roomName,user.username);
+            if(checkIfExist === true)
             {
-                if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
-                {
-                    var seatsInfo = rooms_manager.getRoomsTakenSeats(roomName,user.username);
-                    socket.emit("room:AllSeatTaken",seatsInfo);
-                }
-                if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
-                {
-                    socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
-                }
-
-                 if(userToValidate)
-                 {
-                     socket.emit("room:usertocheck",userToValidate);
-                 }
+                rooms_manager.userResetSocket(roomName,user.username,socket.id);
             }
-        });
+            else if(checkIfExist === false && roomState === "step2")
+            {
+                socket.emit("room:closed");
+            }
+            else
+            {
+                if(roomState === "step1")
+                {
+                    rooms_manager.addUserToRoom(roomName, user,socket.id);
+                }
+            }
+            var accounts = database_manager.getAccounts(user.group,user.promotion);
+            if(rooms_manager.userAlreadyInRoom(roomName,user.username))
+            {
+                accounts.then(function(data){
+                    socket.emit('room:start',data.length);
+                    socket.emit("room:timer", rooms_manager.getTimer(roomName));
+                    if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
+                    {
+                        var seatsInfo = rooms_manager.getRoomsTakenSeats(roomName,user.username);
+                        socket.emit("room:AllSeatTaken",seatsInfo);
+                    }
+                    if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
+                    {
+                        socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
+                    }
+                    if(userToValidate)
+                    {
+                        socket.emit("room:usertocheck",userToValidate);
+                    }
+                });
+            }
+        }
     });
 
     socket.on("room:setseat", function(user,seat){
-
-        var roomName = user.promotion + user.group;
-        var isFree = rooms_manager.isRoomSeatFree(roomName,user.username,seat);
-        if(isFree === true)
+        var group = user.group.substr(0,2);
+        var roomName = user.promotion + group;
+        var roomExist = rooms_manager.roomExist(roomName);
+        if(roomExist)
         {
-            rooms_manager.roomTakeSeat(roomName,user.username,seat);
-            rooms_manager.setUserState(roomName,user.username,"toValidate");
-            socket.broadcast.to(roomName).emit('room:seatTaken', seat);
-            socket.emit("room:seatTakenByYou", seat);
-            var numberOfUserToValidate = rooms_manager.getUsersToValidate(roomName);
-            if(numberOfUserToValidate.length >=2)
+            var roomState = rooms_manager.getRoomState(roomName);
+            if(roomState === "step1")
             {
-                for(var i =0; i < numberOfUserToValidate.length;i++)
+                var isFree = rooms_manager.isRoomSeatFree(roomName,user.username,seat);
+                if(isFree === true)
                 {
-                    var rUserToValidate = rooms_manager.getRandomUserToValidate(roomName,numberOfUserToValidate[i].username);
-                    if(socket.id === numberOfUserToValidate[i].socketid)
-                    {
-                        rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
-                        rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
-                        socket.emit("room:usertocheck",rUserToValidate);
-                        console.log(socket.id + "local send");
-                    }
-                    else if (socket.id !== numberOfUserToValidate[i].socketid)
-                    {
-                        rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
-                        rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
-                        console.log(socket.id + "send");
-                        console.log(numberOfUserToValidate[i].socketid);
-                        socket.broadcast.to(numberOfUserToValidate[i].socketid).emit("room:usertocheck",rUserToValidate);
-                    }
+                    rooms_manager.roomTakeSeat(roomName,user.username,seat);
+                    rooms_manager.setUserState(roomName,user.username,"toValidate");
+                    socket.broadcast.to(roomName).emit('room:seatTaken', seat);
+                    socket.emit("room:seatTakenByYou", seat);
+                }
+                else if (isFree === "Youtookit")
+                {
+                    socket.emit("room:seatAlreadyUsedByYou");
+                }
+                else if (isFree === "alreadyHave")
+                {
+                    socket.emit("room:seatAlreadySet")
+                }
+                else
+                {
+                    socket.emit("room:seatAlreadyUsed");
                 }
             }
-        }
-        else if (isFree === "Youtookit")
-        {
-            socket.emit("room:seatAlreadyUsedByYou");
-        }
-        else if (isFree === "alreadyHave")
-        {
-            socket.emit("room:seatAlreadySet")
+            else
+            {
+                socket.emit("room:closed");
+            }
         }
         else
         {
-            socket.emit("room:seatAlreadyUsed");
+            socket.emit("room:notcreated");
         }
 
     });
 
 
     socket.on("room:validateuser", function(user,answer){
-        console.log("here");
-        var roomName = user.promotion + user.group;
-        var userHeHasToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
-        rooms_manager.hasValidatedUser(roomName,user.username);
-        if(answer === "yes")
+        var group = user.group.substr(0,2);
+        var roomName = user.promotion + group;
+        var roomExist = rooms_manager.roomExist(roomName);
+        if(roomExist)
         {
-            rooms_manager.setUserState(roomName,userHeHasToValidate,"Validated");
-            console.log("did it");
+            var roomState = rooms_manager.getRoomState(roomName);
+            if(roomState === "step2")
+            {
+                var userHeHasToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
+                rooms_manager.hasValidatedUser(roomName,user.username);
+                if(answer === "yes")
+                {
+                    rooms_manager.setUserState(roomName,userHeHasToValidate,"Validated");
+                }
+                else if(answer === "no")
+                {
+                    rooms_manager.setUserState(roomName,userHeHasToValidate,"Conflict");
+                }
+            }
+            else
+            {
+                socket.emit("room:verifover");
+            }
         }
-        else if(answer === "no")
+        else
         {
-            rooms_manager.setUserState(roomName,userHeHasToValidate,"Conflict");
-            console.log("did it but conflict");
+            socket.emit("room:notcreated");
         }
     });
-
-    socket.on("room:end", function(room){
-
-        rooms_manager.deleteRoom(roomName);
-    });
-
 });
+
+
+var registerTimedFunction = function()
+{
+    var promoiion,group,startHour,step;
+       var shedule = database_manager.getSheduleInfo();
+        shedule.then(function(shedule){
+            var day = database_manager.getDay(new Date());
+            console.log(shedule.length);
+            for(var promo = 0, l = shedule.length;promo<l;promo++)
+            {
+                promotion = shedule[promo].promotion;
+                group = shedule[promo].group;
+                for(var course = 0, v = shedule[promo][day].length;course<v;course++)
+                {
+                    startHour = shedule[promo][day][course].start;
+                    step = shedule[promo][day][course].step;
+                    var date = new Date();
+                    date.setHours(23);
+                    date.setMinutes(17);
+                    new CronJob({
+                        cronTime: date,
+                        onTick: function(group,promotion){
+                            var roomName = promotion + group;
+                            console.log(roomName);
+                            rooms_manager.createRoom(roomName);
+                            rooms_manager.setTimer(roomName,new Date());
+                            rooms_manager.setRoomState(roomName, "step1");
+                            this.stop();
+                        }.arg(group,promotion),
+                        start: true,
+                        timeZone: 'Europe/Paris'
+                    });
+                    date.setMinutes(19);
+                    new CronJob({
+                        cronTime: date,
+                        onTick: function(group,promotion){
+                            var roomName = promotion + group;
+                            var numberOfUserToValidate = rooms_manager.getUsersToValidate(roomName);
+                            rooms_manager.setRoomState(roomName, "step2");
+                            rooms_manager.setTimer(roomName,new Date());
+                            io.in(roomName).emit("room:timer", rooms_manager.getTimer(roomName));
+                            for(var i =0; i < numberOfUserToValidate.length;i++)
+                            {
+                                var rUserToValidate = rooms_manager.getRandomUserToValidate(roomName,numberOfUserToValidate[i].username);
+                                if(rUserToValidate)
+                                {
+                                    rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
+                                    rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
+                                    io.to(numberOfUserToValidate[i].socketid).emit("room:usertocheck",rUserToValidate);
+                                }
+                                else
+                                {
+                                    // to validate by the teacher
+                                }
+                            }
+                            this.stop();
+                        }.arg(group,promotion),
+                        start: true,
+                        timeZone: 'Europe/Paris'
+                    });
+                    date.setSeconds(21);
+                    new CronJob({
+                        cronTime: date,
+                        onTick: function(group,promotion){
+                            var roomName = promotion + group;
+                            var users = rooms_manager.getUsers(roomName);
+                            database_manager.registerUsersCheckIn(users,group,promotion);
+                            this.stop();
+                        }.arg(group,promotion),
+                        onComplete: function(){
+                            var roomName = promotion + group;
+                            rooms_manager.deleteRoom(roomName);
+                        }.arg(group,promotion),
+                        start: true,
+                        timeZone: 'Europe/Paris'
+                    });
+
+                }
+            }
+        });
+
+}
+
+registerTimedFunction();
+
 
 
 // development error handler

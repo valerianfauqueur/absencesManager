@@ -154,3 +154,10 @@ canvas
     text-align: center;
 }
 
+#countdown
+{
+    color:#1a9f57;
+    font-family: "Arial",sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+}

@@ -1,12 +1,36 @@
 <div ng-controller="navController as navCtrl" ng-init="absenceCtrl.getData()">
    <div class="course-info" ng-show="navCtrl.isFormStep(1)">
-        <h2>Bonjour, {{account.username}}<br> vous êtes actuellement en cours de :<br>
-        {{account.currentCourse}}</h2>
-        <button type="button" class="btn btn-primary btn-lg" ng-click="navCtrl.setFormStep(2);absenceCtrl.joinList()">Valider ma présence</button>
+        <h2>Bonjour, {{account.firstname}}<br>
+        {{currentCourse}}</h2>
+        <button type="button"  id="startbtn" class="btn btn-primary btn-lg" ng-class="{disabled: !account.currentCourse}" ng-click="navCtrl.setFormStep(2,$event);absenceCtrl.joinList()">Valider ma présence</button>
+        <div data-remodal-id="course-does-not-exist">
+            <button data-remodal-action="close" class="remodal-close"></button>
+            <h1>Erreur</h1>
+            <p>
+                Le cours auquel vous essayez d'acceder n'existe plus ou n'est pas encore commencé.
+            </p>
+        </div>
+
+        <div data-remodal-id="course-checkin-over">
+            <button data-remodal-action="close" class="remodal-close"></button>
+            <h1>Erreur</h1>
+            <p>
+                Le période d'enregistrement au cours est terminé.
+            </p>
+        </div>
+
+        <div data-remodal-id="course-verify-over">
+            <button data-remodal-action="close" class="remodal-close"></button>
+            <h1>Erreur</h1>
+            <p>
+                La période de vérification est terminé.
+            </p>
+        </div>
     </div>
 
     <div class="course-info" ng-show="navCtrl.isFormStep(2)">
        <h3 class="message"></h3>
+       <p id="countdown"></p>
         <canvas width="800" height="600">
             Votre navigateur ne supporte pas canvas
         </canvas>

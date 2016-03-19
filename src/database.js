@@ -6,36 +6,40 @@ var database_manager = {
 
     getCurrentCourseFor: function(user)
     {
-        var userInfo = this.getAccountInfo(user);
-        var that = this;
+        var userInfo = this.getAccountInfo(user),
+            that = this,
+            date = new Date();
+            time = {},
+            foundOne = false;
+            time.hour = date.getHours();
+            time.min = date.getMinutes();
+            time.day = that.getDay(date);
         return new Promise(function(resolve,reject){
         userInfo.then(function(user){
-            var sheduleInfo = that.getSheduleInfo(user.promotion);
+            var sheduleInfo = that.getSheduleInfoFor(user.promotion,user.group.substr(0,2));
             sheduleInfo.then(function(shedule){
-                var date = new Date(),
-                    foundOne = false,
-                    day = that.getDay(date),
-                    time = that.getCurrentTime(date);
-                if (day !== "sun" && day !== "sat")
+                if (time.day !== "sun" && time.day !== "sat")
                 {
-                    console.log(shedule[day]);
-                    for(var i = 0, l = shedule[day].length; i < l;i++)
+                    for(var i = 0, l = shedule[time.day].length; i < l;i++)
                     {
-                        if(time >= shedule[day][i].start && time <=shedule[day][i].end)
+                        if(time.hour >= shedule[time.day][i]["start"].hour && time.hour <= shedule[time.day][i]["end"].hour)
                         {
-                            foundOne = true;
-                            var obj = {};
-                            obj.course = shedule[day][i].course;
-                            obj.account = user;
-                            resolve(obj);
-                            break;
+                            if(time.min >= shedule[time.day][i]["start"].min && time.min <= shedule[time.day][i]["end"].min)
+                            {
+                                foundOne = true;
+                                var obj = {};
+                                obj.course = shedule[time.day][i].course;
+                                obj.account = user;
+                                resolve(obj);
+                                break;
+                            }
                         }
                     }
                 }
                 if(foundOne === false)
                 {
                     var obj = {};
-                    obj.course = "Aucun cours";
+                    obj.course = false;
                     obj.account = user;
                     resolve(obj);
                 }
@@ -81,10 +85,15 @@ var database_manager = {
     },
 
 
-    getSheduleInfo: function(promo)
+    getSheduleInfoFor: function(promo,group,time)
     {
         return new Promise(function(resolve,reject){
-            Schedule.find({ promotion:promo }, function(err,result){
+
+            var query = {
+                promotion: promo,
+                group: group,
+            }
+            Schedule.find(query, function(err,result){
             if(err)
             {
                 reject(false);
@@ -94,21 +103,17 @@ var database_manager = {
         });
     },
 
-    getCurrentTime: function(date)
+    getSheduleInfo: function()
     {
-        var hours = date.getHours(),
-            min = date.getMinutes();
-            if(min <10)
+        return new Promise(function(resolve,reject){
+            Schedule.find({}, function(err,result){
+            if(err)
             {
-                min = "0"+min;
+                reject(false);
             }
-            if(hours <10)
-            {
-                hours = "0"+hours;
-            }
-
-        var time = parseInt(hours +""+ min);
-        return time;
+             resolve(result);
+            });
+        });
     },
 
     getDay: function(date)
@@ -116,6 +121,52 @@ var database_manager = {
         var fullDate =date.toDateString();
         var day = fullDate.substr(0,3).toLowerCase();
         return "mon";
+    },
+
+    registerUsersCheckIn: function(users,group,promo)
+    {
+        var accounts = this.getAccounts(group,promo);
+
+        accounts.then(function(accounts){
+            for(var i=0, l=accounts.length;i<l;i++)
+            {
+                var match = false;
+                for(var b=0,h=users.length;b<h;b++)
+                {
+                    if(accounts[i].username === users[b].username)
+                    {
+                        match = users[b];
+                    }
+                }
+                var query = {'username':accounts[i].username};
+                if(match)
+                {
+                var newstate = {
+                                date: new Date(),
+                                course: match.currentCourse,
+                                state:match.state,
+                                hasConfirmedSomeone: match.hasValidatedUser,
+                                userHeHadToValidate: match.userToValidate
+                               }
+                }
+                else
+                {
+                var newstate = {
+                                date: new Date(),
+                                course: users[0].currentCourse,
+                                state:"Absent"
+                               }
+                }
+                var update = {$push: {state: newstate}};
+                var options = {safe:true, upsert: true};
+                Account.findOneAndUpdate(query, update, options, function(err, result){
+                    if(err)
+                    {
+                        console.log(err);
+                    }
+                });
+            }
+        });
     }
 }
 

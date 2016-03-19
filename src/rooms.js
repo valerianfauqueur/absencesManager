@@ -7,7 +7,8 @@ var rooms_manager = {
         this.rooms[id] =
         {
             users: [],
-            state: "waiting"
+            timer: false,
+            state: false
         }
     },
 
@@ -197,6 +198,12 @@ var rooms_manager = {
         }
     },
 
+    getHasValidatedUser: function(id,me)
+    {
+        var me = this.getUser(id,me);
+        return me.hasValidatedUser;
+    },
+
     getTheUserToValidate: function(id,me)
     {
         var me = this.getUser(id,me);
@@ -226,7 +233,7 @@ var rooms_manager = {
         }
     },
 
-    getUser(id,username)
+    getUser:function(id,username)
     {
         for(var i=0,l=this.rooms[id].users.length;i<l;i++)
         {
@@ -236,6 +243,37 @@ var rooms_manager = {
             }
         }
         return false;
+    },
+
+    getUsers: function(id)
+    {
+        if(this.roomExist(id))
+        {
+            if(this.rooms[id].users.length > 0)
+            {
+                return this.rooms[id].users;
+            }
+        }
+    },
+
+    setRoomState: function(id,state)
+    {
+        this.rooms[id].state = state;
+    },
+
+    getRoomState: function(id)
+    {
+        return this.rooms[id].state;
+    },
+
+    setTimer: function(id,date)
+    {
+        this.rooms[id].timer = date;
+    },
+
+    getTimer: function(id)
+    {
+        return this.rooms[id].timer;
     }
 }
 
