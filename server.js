@@ -82,6 +82,11 @@ io.on('connection',function(socket){
             if(checkIfExist === true)
             {
                 rooms_manager.userResetSocket(roomName,user.username,socket.id);
+                var userToValidate = rooms_manager.getTheUserToValidate(roomName,user.username);
+                if(userToValidate !== false)
+                {
+                    userToValidate = rooms_manager.getUser(roomName,userToValidate);
+                }
             }
             else if(checkIfExist === false && roomState === "step2")
             {
