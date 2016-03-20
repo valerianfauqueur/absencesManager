@@ -132,7 +132,10 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
 
 
 
-    canvas.addEventListener("click",function(e){
+    canvas.addEventListener("click",clickcanvas);
+
+
+    function clickcanvas(e){
         var mouse = {
             x: e.clientX - canvas.getBoundingClientRect().left,
             y: e.clientY - canvas.getBoundingClientRect().top
@@ -148,7 +151,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
                 }
             }
         }
-    });
+    }
 
     this.joinList = function()
     {
@@ -307,6 +310,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     });
 
     socket.on('room:usertocheck', function(user){
+            canvas.removeEventListener("click",clickcanvas)
             console.log(user.seat);
             console.log(seats);
             var seat = seats[user.seat];
