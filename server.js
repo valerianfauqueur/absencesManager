@@ -203,18 +203,16 @@ var registerTimedFunction = function()
             console.log(shedule.length);
             for(var promo = 0, l = shedule.length;promo<l;promo++)
             {
-                console.log("here");
                 promotion = shedule[promo].promotion;
                 group = shedule[promo].group;
                 for(var course = 0, v = shedule[promo][day].length;course<v;course++)
                 {
-                    console.log("there");
                     startHour = shedule[promo][day][course].start;
                     step = shedule[promo][day][course].step;
-                    var date = new Date();
+                    var date = new Date().setTimezone('Europe/Paris');;
                     console.log(date);
                     date.setHours(1);
-                    date.setMinutes(49);
+                    date.setMinutes(55);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -228,7 +226,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(51);
+                    date.setMinutes(57);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -256,7 +254,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(53);
+                    date.setMinutes(59);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
