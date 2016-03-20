@@ -210,8 +210,8 @@ var registerTimedFunction = function()
                     startHour = shedule[promo][day][course].start;
                     step = shedule[promo][day][course].step;
                     var date = new Date();
-                    date.setHours(23);
-                    date.setMinutes(17);
+                    date.setHours(1);
+                    date.setMinutes(36);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -225,7 +225,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(19);
+                    date.setMinutes(38);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
