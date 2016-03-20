@@ -217,7 +217,7 @@ var registerTimedFunction = function()
                     var date = new Date();
                     console.log(date);
                     date.setHours(1);
-                    date.setMinutes(44);
+                    date.setMinutes(51);
                     date.setSeconds(0)
                     console.log(date);
                     new CronJob({
@@ -233,7 +233,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(47);
+                    date.setMinutes(52);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -261,7 +261,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(48);
+                    date.setMinutes(43);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
