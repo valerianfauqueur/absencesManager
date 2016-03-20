@@ -52,7 +52,7 @@ passport.deserializeUser(Account.deserializeUser());
 
 //db connection
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/absencesApp', function(err) {
+mongoose.connect('mongodb://heroku_mfth0m01:doiu6n1ep3fmd4cjdr6l0t6vt8@ds031952.mlab.com:31952/heroku_mfth0m01', function(err) {
     if(err) {
         console.log('connection error', err);
     } else {
