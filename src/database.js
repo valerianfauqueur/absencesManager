@@ -109,10 +109,8 @@ var database_manager = {
             Schedule.find({}, function(err,result){
             if(err)
             {
-                console.log(err);
                 reject(false);
             }
-            console.log(result);
              resolve(result);
             });
         });
