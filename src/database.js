@@ -85,7 +85,7 @@ var database_manager = {
     },
 
 
-    getSheduleInfoFor: function(promo,group,time)
+    getSheduleInfoFor: function(promo,group)
     {
         return new Promise(function(resolve,reject){
 
@@ -109,8 +109,10 @@ var database_manager = {
             Schedule.find({}, function(err,result){
             if(err)
             {
+                console.log(err);
                 reject(false);
             }
+            console.log(result);
              resolve(result);
             });
         });

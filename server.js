@@ -196,7 +196,7 @@ io.on('connection',function(socket){
 
 var registerTimedFunction = function()
 {
-    var promoiion,group,startHour,step;
+    var promotion,group,startHour,step;
        var shedule = database_manager.getSheduleInfo();
         shedule.then(function(shedule){
             var day = database_manager.getDay(new Date());
