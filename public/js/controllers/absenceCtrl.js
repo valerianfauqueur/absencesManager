@@ -172,11 +172,11 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
 
            }
 
-           for(var i = 0; i < numberOfSeatr2;i++)
+           for(var i = 0,d=36; i < numberOfSeatr2;i++,d++)
            {
                z = i % perRowr2;
                seatsRow = Math.floor(i/perRowr2);
-               seats.push({number:i, x:(z*o.spaceBetweenX)+o.middlespace, y:(seatsRow*o.spaceBetweenY)+(o.spaceBetweenY), height:o.height, width:o.width, taked:false});
+               seats.push({number:d, x:(z*o.spaceBetweenX)+o.middlespace, y:(seatsRow*o.spaceBetweenY)+(o.spaceBetweenY), height:o.height, width:o.width, taked:false});
                ctx.fillStyle = "grey";
                ctx.fillRect((z*o.spaceBetweenX)+o.middlespace,(seatsRow*o.spaceBetweenY)+(o.spaceBetweenY),o.width,o.height);
            }
