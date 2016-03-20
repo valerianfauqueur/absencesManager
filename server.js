@@ -49,10 +49,10 @@ passport.use(new LocalStrategy(Account.authenticate()));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 //mongodb://heroku_mfth0m01:doiu6n1ep3fmd4cjdr6l0t6vt8@ds031952.mlab.com:31952/heroku_mfth0m01
-
+//mongodb://localhost/absencesApp
 //db connection
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/absencesApp', function(err) {
+mongoose.connect('mongodb://heroku_mfth0m01:doiu6n1ep3fmd4cjdr6l0t6vt8@ds031952.mlab.com:31952/heroku_mfth0m01', function(err) {
     if(err) {
         console.log('connection error', err);
     } else {
@@ -212,7 +212,7 @@ var registerTimedFunction = function()
                     var date = new Date();
                     console.log(date);
                     date.setHours(1);
-                    date.setMinutes(26);
+                    date.setMinutes(28);
                     date.setSeconds(0)
                     console.log(date);
                     new CronJob({
@@ -228,7 +228,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(28);
+                    date.setMinutes(30);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -256,7 +256,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(30);
+                    date.setMinutes(32);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
