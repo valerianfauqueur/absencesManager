@@ -203,10 +203,12 @@ var registerTimedFunction = function()
             console.log(shedule.length);
             for(var promo = 0, l = shedule.length;promo<l;promo++)
             {
+                console.log("here");
                 promotion = shedule[promo].promotion;
                 group = shedule[promo].group;
                 for(var course = 0, v = shedule[promo][day].length;course<v;course++)
                 {
+                    console.log("there");
                     startHour = shedule[promo][day][course].start;
                     step = shedule[promo][day][course].step;
                     var date = new Date();
