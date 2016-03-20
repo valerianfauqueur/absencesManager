@@ -100,26 +100,23 @@ io.on('connection',function(socket){
                 }
             }
             var accounts = database_manager.getAccounts(user.group,user.promotion);
-            if(rooms_manager.userAlreadyInRoom(roomName,user.username))
-            {
-                accounts.then(function(data){
-                    socket.emit('room:start',data.length);
-                    socket.emit("room:timer", rooms_manager.getTimer(roomName));
-                    if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
-                    {
-                        var seatsInfo = rooms_manager.getRoomsTakenSeats(roomName,user.username);
-                        socket.emit("room:AllSeatTaken",seatsInfo);
-                    }
-                    if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
-                    {
-                        socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
-                    }
-                    if(userToValidate)
-                    {
-                        socket.emit("room:usertocheck",userToValidate);
-                    }
-                });
-            }
+            accounts.then(function(data){
+                socket.emit('room:start',data.length);
+                socket.emit("room:timer", rooms_manager.getTimer(roomName));
+                if(rooms_manager.getRoomsTakenSeats(roomName,user.username) !== "none")
+                {
+                    var seatsInfo = rooms_manager.getRoomsTakenSeats(roomName,user.username);
+                    socket.emit("room:AllSeatTaken",seatsInfo);
+                }
+                if(rooms_manager.userSeatIsAlreadySet(roomName,user.username) !== false)
+                {
+                    socket.emit("room:MySeat",rooms_manager.userSeatIsAlreadySet(roomName,user.username));
+                }
+                if(userToValidate)
+                {
+                    socket.emit("room:usertocheck",userToValidate);
+                }
+            });
         }
     });
 
@@ -216,8 +213,8 @@ var registerTimedFunction = function()
                     step = shedule[promo][day][course].step;
                     var date = new Date();
                     console.log(date);
-                    date.setHours(1);
-                    date.setMinutes(51);
+                    date.setHours(15);
+                    date.setMinutes(50);
                     date.setSeconds(0)
                     console.log(date);
                     new CronJob({
@@ -233,35 +230,59 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(52);
+                    date.setMinutes(51);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
                             var roomName = promotion + group;
                             var numberOfUserToValidate = rooms_manager.getUsersToValidate(roomName);
+                            for(var i =0, k = numberOfUserToValidate.length; i <k ;i++)
+                            {
+                                var rUserToValidate = rooms_manager.getRandomUserToValidate(roomName);
+                                console.log("utilisateur "+rUserToValidate.username+" attribuer à "+numberOfUserToValidate[i].username);
+                                rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
+                            }
+
+                            for(var d =0, l = numberOfUserToValidate.length; d < l ;d++)
+                            {
+                                console.log("nombre d'util à validé "+numberOfUserToValidate.length);
+                                var myUserToValidate = rooms_manager.getTheUserToValidate(roomName,numberOfUserToValidate[d].username);
+                                console.log("my user to validate "+ myUserToValidate);
+                                if(myUserToValidate === numberOfUserToValidate[d].username)
+                                {
+                                    var backupUser;
+                                    do
+                                    {
+                                        backupUser = rooms_manager.getRandomUserToValidate(roomName);
+                                        console.log("backup user "+backupUser.username);
+                                        if(backupUser.username !== numberOfUserToValidate[d].username)
+                                        {
+                                            rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[d].username,backupUser);
+                                            rooms_manager.setUserToValidate(roomName,backupUser.username,numberOfUserToValidate[d]);
+                                        }
+                                    }
+                                    while(backupUser.username === numberOfUserToValidate[d].username)
+                                }
+                            }
+
+                            for(var p = 0, m = numberOfUserToValidate.length; p < m ;p++)
+                            {
+                               var sendUserToValidate = rooms_manager.getTheUserToValidate(roomName,numberOfUserToValidate[p].username);
+                               console.log("send this "+sendUserToValidate);
+                               console.log("à "+numberOfUserToValidate[p].socketid+" "+numberOfUserToValidate[p].username);
+                               var userToSend = rooms_manager.getUser(roomName, sendUserToValidate);
+                               rooms_manager.setUserState(roomName,sendUserToValidate,"waitingValidation");
+                               io.to(numberOfUserToValidate[p].socketid).emit("room:usertocheck",userToSend);
+                            }
                             rooms_manager.setRoomState(roomName, "step2");
                             rooms_manager.setTimer(roomName,new Date());
                             io.in(roomName).emit("room:timer", rooms_manager.getTimer(roomName));
-                            for(var i =0; i < numberOfUserToValidate.length;i++)
-                            {
-                                var rUserToValidate = rooms_manager.getRandomUserToValidate(roomName,numberOfUserToValidate[i].username);
-                                if(rUserToValidate)
-                                {
-                                    rooms_manager.setUserToValidate(roomName,numberOfUserToValidate[i].username,rUserToValidate);
-                                    rooms_manager.setUserState(roomName,rUserToValidate.username,"waitingValidation");
-                                    io.to(numberOfUserToValidate[i].socketid).emit("room:usertocheck",rUserToValidate);
-                                }
-                                else
-                                {
-                                    // to validate by the teacher
-                                }
-                            }
                             this.stop();
                         }.arg(group,promotion),
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(43);
+                    date.setMinutes(53);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){

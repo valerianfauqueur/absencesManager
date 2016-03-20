@@ -121,22 +121,11 @@ var rooms_manager = {
         return this.rooms[id].users.length;
     },
 
-    getRandomUserToValidate: function(id,username)
+    getRandomUserToValidate: function(id)
     {
         var usersToValidate = this.getUsersToValidate(id);
-        var usersToValidateMinusYou = [];
-        for(var i = 0, l=usersToValidate.length; i<l;i++)
-        {
-            if(usersToValidate[i].state === "toValidate")
-            {
-                if(usersToValidate[i].username !== username)
-                {
-                    usersToValidateMinusYou.push(usersToValidate[i]);
-                }
-            }
-        }
-        var random = Math.floor(Math.random()*usersToValidateMinusYou.length);
-        var randomUserToValidate = usersToValidateMinusYou[random];
+        var random = Math.floor(Math.random()*usersToValidate.length);
+        var randomUserToValidate = usersToValidate[random];
         return randomUserToValidate;
     },
 
