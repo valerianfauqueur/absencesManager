@@ -4,38 +4,41 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     var controller = this;
     var scope = $rootScope;
     var canvas = document.querySelector("canvas");
-    var messagebox = document.querySelector(".course-info .message");
+    var messagebox = document.querySelector(".home-container .board #row1 h3");
+    var statusbox = document.querySelector(".home-container .board #row1 .appel .appel--content .step2 .status");
+    var refreshbox = document.querySelector(".home-container .board #row1 .appel .appel--content .step2 .refresh");
+    var titlebox = document.querySelector(".home-container .board #row1 h2");
     var ctx = canvas.getContext("2d");
     var seats = [];
-    scope.account = {};
     var userImg = new Image();
     userImg.src = "../../img/usericon.png";
     var alreadyRedrawed = true;
     var Collide = false;
     var canvasClick;
-    var canvas_size = getViewport();
-    var canvas_width  = (canvas_size[0]/100)*50;
-    var canvas_height = (canvas_size[0]/100)*34;
+    var canvas_size = getContainer();
+    var canvas_width  = (canvas_size[0]/100)*90;
+    var canvas_height = (canvas_size[0]/100)*40;
     canvas.setAttribute("width", canvas_width);
     canvas.setAttribute("height", canvas_height);
+    this.formStep = 1;
+    var refreshtimer;
 
     var seatsParams = {
-        height:(canvas_width/100)*8.7,
+        height:(canvas_width/100)*5.2,
         width:(canvas_width/100)*8.7,
         middlespace: (canvas_width/100)*62
     }
     seatsParams.spaceBetweenX= seatsParams.width+(canvas_width/100)*1;
     seatsParams.spaceBetweenY= seatsParams.height+(canvas_width/100)*2;
-    var voyelles = ["a","e","i","o","u","y"];
 
 
 
     var resizeTimer = 500;
     window.addEventListener("resize", function(){
-            canvas_size = getViewport();
-            canvas_width  = (canvas_size[0]/100)*50;
-            canvas_height = (canvas_size[0]/100)*34;
-            seatsParams.height =(canvas_width/100)*8.7;
+            canvas_size = getContainer();
+            canvas_width  = (canvas_size[0]/100)*90;
+            canvas_height = (canvas_size[0]/100)*40;
+            seatsParams.height =(canvas_width/100)*5.2;
             seatsParams.width =(canvas_width/100)*8.7;
             seatsParams.middlespace = (canvas_width/100)*62;
             seatsParams.spaceBetweenX= seatsParams.width+(canvas_width/100)*1;
@@ -44,50 +47,6 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
             canvas.setAttribute("height", canvas_height);
             drawSeat();
     });
-    this.getData = function()
-    {
-        var deferred = $q.defer();
-        $http.get("/data")
-            .success(function (data) {
-                if(data)
-                {
-                    scope.account.currentCourse = data.course;
-                    if(data.course === false)
-                    {
-                      scope.currentCourse = "Pas ce cours pour le moment, met toi à l'aise !";
-                    }
-                    else
-                    {
-                        if(voyelles.indexOf(scope.account.currentCourse.substr(0,1)))
-                        {
-                            scope.currentCourse = "tu dois être en cours d'"+data.course+" non ?";
-                        }
-                        else
-                        {
-                            scope.currentCourse = "tu dois être en cours de "+data.course+" non ?";
-                        }
-                    }
-                    scope.account.promotion = data.account.promotion;
-                    scope.account.username = data.account.username;
-                    var getname2 = data.account.username.split("@");
-                    var getname = getname2[0].split(".");
-                    scope.account.firstname = getname[0];
-                    scope.account.lastname = getname[1];
-                    scope.account.group = data.account.group;
-                    deferred.resolve(data);
-                }
-            })
-            .error(function(data) {
-                scope.currentCourse = "Could not get data";
-                scope.account.promotion = false;
-                scope.account.username = false;
-                scope.account.group = false;
-                deferred.reject(data);
-            })
-        return deferred.promise;
-    }
-
-
 
     function collide(mouse,target)
     {
@@ -123,7 +82,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         }
         if(collideThisCheck === false && alreadyRedrawed === false)
         {
-                ctx.fillStyle = "grey";
+                ctx.fillStyle = "#d8d8d8";
                 ctx.fillRect(Collide.x,Collide.y,Collide.width,Collide.height);
                 alreadyRedrawed = true;
         }
@@ -153,15 +112,11 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         }
     }
 
-    this.joinList = function()
-    {
-        socket.emit("readyToJoin", scope.account);
-    }
 
     socket.on("room:start", function(){
         var numberOfSeatr1 = 36;
         var numberOfSeatr2 = 20;
-        messagebox.innerText = "Veuillez indiquer votre position sur le schéma";
+        messagebox.innerHTML = "Veuillez indiquer votre position sur le schéma";
         var o = seatsParams, z, seatsRow,perRowr1, perRowr2;
         perRowr1 = 6;
         perRowr2 = 4;
@@ -170,7 +125,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
                z = i % perRowr1;
                seatsRow = Math.floor(i/perRowr1);
                seats.push({number:i, x:(z*o.spaceBetweenX), y:(seatsRow*o.spaceBetweenY), height:o.height, width:o.width, taked:false});
-               ctx.fillStyle = "grey";
+               ctx.fillStyle = "#d8d8d8";
                ctx.fillRect((z*o.spaceBetweenX),(seatsRow*o.spaceBetweenY),o.width,o.height);
 
            }
@@ -180,7 +135,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
                z = i % perRowr2;
                seatsRow = Math.floor(i/perRowr2);
                seats.push({number:d, x:(z*o.spaceBetweenX)+o.middlespace, y:(seatsRow*o.spaceBetweenY)+(o.spaceBetweenY), height:o.height, width:o.width, taked:false});
-               ctx.fillStyle = "grey";
+               ctx.fillStyle = "#d8d8d8";
                ctx.fillRect((z*o.spaceBetweenX)+o.middlespace,(seatsRow*o.spaceBetweenY)+(o.spaceBetweenY),o.width,o.height);
            }
     });
@@ -202,15 +157,15 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
                 }
                 else if (seats[i].taked === "verify")
                 {
-                    ctx.fillStyle="yellow";
+                    ctx.fillStyle="#3f51b5";
                 }
                 else if(seats[i].taked === true)
                 {
-                     ctx.fillStyle="black";
+                     ctx.fillStyle="#363736";
                 }
                 else
                 {
-                    ctx.fillStyle="grey";
+                    ctx.fillStyle="#d8d8d8";
                 }
                 z = i % perRowr1;
                 seatsRow = Math.floor(i/perRowr1);
@@ -221,41 +176,38 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
                 ctx.fillRect(seats[i].x,seats[i].y,seats[i].width,seats[i].height);
             }
 
-            for(var i = 0; i < numberOfSeatr2;i++)
+            for(var d = 0,p =36; d < numberOfSeatr2;d++,p++)
             {
 
-                if(seats[i].taked === "me")
+                if(seats[p].taked === "me")
                 {
                     ctx.fillStyle="orange";
                 }
-                else if (seats[i].taked === "verify")
+                else if (seats[p].taked === "verify")
                 {
-                    ctx.fillStyle="yellow";
+                    ctx.fillStyle="#3f51b5";
                 }
-                else if(seats[i].taked === true)
+                else if(seats[p].taked === true)
                 {
-                     ctx.fillStyle="black";
+                     ctx.fillStyle="#363736";
                 }
                 else
                 {
-                    ctx.fillStyle="grey";
+                    ctx.fillStyle="#d8d8d8";
                 }
-                z = i % perRowr2;
-                seatsRow = Math.floor(i/perRowr2);
-                seats[i].x = (z*o.spaceBetweenX)+o.middlespace;
-                seats[i].y = (seatsRow*o.spaceBetweenY)+o.spaceBetweenY;
-                seats[i].height = o.height;
-                seats[i].width = o.width;
-                ctx.fillRect(seats[i].x,seats[i].y,seats[i].width,seats[i].height);
+                z = d % perRowr2;
+                seatsRow = Math.floor(d/perRowr2);
+                seats[p].x = (z*o.spaceBetweenX)+o.middlespace;
+                seats[p].y = (seatsRow*o.spaceBetweenY)+o.spaceBetweenY;
+                seats[p].height = o.height;
+                seats[p].width = o.width;
+                ctx.fillRect(seats[p].x,seats[p].y,seats[p].width,seats[p].height);
             }
         }
 
-    socket.on("room:wait", function(numberOfUsers){
-        messagebox.innerHTML = "Il y a " + numberOfUsers + " étudiants prêt(s). Attente de plus d'étudiants";
-    });
 
     socket.on('room:seatTakenByYou', function(seat){
-        messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant"
+        messagebox.innerHTML = "Attente de la fin de la période d'enregistrement";
         var seat = seats[seat];
         seat.taked = "me";
         ctx.fillStyle = "orange";
@@ -265,12 +217,12 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     socket.on('room:seatAlreadyUsedByYou', function(){
         messagebox.innerHTML = "Vous avez déjà selectionnez ce siège, attendez qu'un Etudiant valide votre présence";
         setTimeout(function(){
-            messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant";
+            messagebox.innerHTML = "Attente de la fin de la période d'enregistrement";
         },3000);
     });
 
     socket.on('room:seatAlreadyUsed', function(){
-        messagebox.innerText = "Ce siège était déjà pris, veuillez en choisir un autre";
+        messagebox.innerHTML = "Ce siège était déjà pris, veuillez en choisir un autre";
         setTimeout(function(){
             messagebox.innerHTML = "Veuillez indiquer votre position sur le schéma";
         },3000);
@@ -279,7 +231,7 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     socket.on('room:seatTaken', function(seat){
         var seat = seats[seat];
         seat.taked = true;
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "#363736";
         ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
     });
 
@@ -293,9 +245,9 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     });
 
         socket.on('room:seatAlreadySet', function(){
-            messagebox.innerText = "Vous avez déjà selectionnez un autre siège, attendez qu'un Etudiant valide votre présence";
+            messagebox.innerHTML = "Vous avez déjà selectionnez un autre siège";
             setTimeout(function(){
-                messagebox.innerHTML = "Présence en attende de validation par un autre Etudiant";
+                messagebox.innerHTML = "Attente de la fin de la période d'enregistrement";
             },3000);
     });
 
@@ -304,22 +256,28 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         {
             var seat = seats[seatTaken[i]];
             seat.taked = true;
-            ctx.fillStyle = "black";
+            ctx.fillStyle = "#363736";
             ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
         }
     });
 
     socket.on('room:usertocheck', function(user){
-            canvas.removeEventListener("click",clickcanvas)
+            console.log(user);
+            canvas.removeEventListener("click",clickcanvas);
+            var getname2 = user.username.split("@");
+            var getname = getname2[0].split(".");
+            var firstname = getname[0].charAt(0).toUpperCase() +getname[0].slice(1);
+            var lastname = getname[1].charAt(0).toUpperCase() +getname[1].slice(1);
             var seat = seats[user.seat];
             seat.taked = "verify";
-            ctx.fillStyle = "yellow";
+            ctx.fillStyle = "#3f51b5";
             ctx.fillRect(seat.x,seat.y,seat.width,seat.height);
-            messagebox.innerHTML = "Veuillez confirmer la présence de " +user.firstname +" "+user.lastname.toUpperCase()+". avant de continuer\n<button class='btn btn-success' id='validatebtn'>YES</button><button class='btn btn-danger' id='conflictbtn'>NO</button>";
-            $(".course-info .message").on("click","#validatebtn", function(e){
+            titlebox.innerHTML = "Vérification"
+            messagebox.innerHTML = "Veuillez confirmer la présence de " +firstname +" "+lastname+" <button id='validatebtn'>oui</button><button id='conflictbtn'>non</button>";
+            $(messagebox).on("click","#validatebtn", function(e){
                 controller.checkUser(true);
             });
-           $(".course-info .message").on("click","#conflictbtn", function(e){
+           $(messagebox).on("click","#conflictbtn", function(e){
                controller.checkUser(false);
            });
     });
@@ -327,9 +285,10 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     socket.on("room:timer",function(time){
         var servTime = new Date(time);
         servTime.setMinutes(servTime.getMinutes()+5);
-        $(".course-info #countdown").countdown(servTime, function(event){
+        $(".home-container .board #row1 .appel .appel--content .step1 #countdown").countdown(servTime, function(event){
             $(this).html(event.strftime('%M:%S'));
         });
+
     });
 
 
@@ -337,13 +296,29 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
     {
         if(answer === true)
         {
+            console.log(scope.account);
             socket.emit("room:validateuser", scope.account,"yes");
-            messagebox.innerHTML = "Vous avez fini ! Votre statut sera pris en compte ! Si votre statut ne correspond à la fin du timer allez voir l'intervenant";
+            $(".home-container .board #row1 .appel .appel--content .step1").fadeOut(400);
+            setTimeout(function(){
+                $(".home-container .board #row1 .appel .appel--content .step2").fadeIn(400);
+                controller.checkStatus();
+                refreshtimer = setInterval(function(){
+                   controller.checkStatus();
+                },10000);
+            },400);
         }
         else if (answer === false)
         {
             socket.emit("room:validateuser", scope.account,"no");
-            messagebox.innerHTML = "Vous avez fini ! Votre statut sera pris en compte ! Si votre statut ne correspond à la fin du timer allez voir l'intervenant";
+            $(".home-container .board #row1 .appel .appel--content .step1").fadeOut(400);
+            setTimeout(function(){
+                $(".home-container .board #row1 .appel .appel--content .step2").fadeIn(400);
+                controller.checkStatus();
+                refreshtimer = setInterval(function(){
+                   controller.checkStatus();
+                },10000);
+            },400);
+
         }
         else
         {
@@ -356,30 +331,46 @@ angular.module('absencesManager').controller('absenceController',["$rootScope","
         socket.emit("end",scope.account);
     }
 
-    function getViewport() {
+    this.checkStatus = function()
+    {
+        socket.emit("room:checkstatus",scope.account);
+    }
 
-     var viewPortWidth;
-     var viewPortHeight;
+    socket.on("room:status",function(status){
+        if(status === "waitingValidation")
+        {
+            statusbox.innerHTML = "Personne n'a renseigné ton status pour le moment";
+            var refreshTime = new Date();
+            refreshTime.setSeconds(refreshTime.getSeconds()+10);
+            $(refreshbox).countdown(refreshTime,function(event){
+                $(this).html(event.strftime('Nouvelle vérification dans %S'));
+            });
+        }
+        else if(status === "Conflict")
+        {
+            statusbox.innerHTML = "Tu as été renseigné absent";
+            refreshbox.innerHTML = " ";
+            clearTimeout(refreshtimer);
+        }
+        else if(status === "Validated")
+        {
+            statusbox.innerHTML = "C'est tout bon on t'as renseigné présent";
+            refreshbox.innerHTML = " ";
+            clearTimeout(refreshtimer);
+        }
 
-     // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
-     if (typeof window.innerWidth != 'undefined') {
-       viewPortWidth = window.innerWidth,
-       viewPortHeight = window.innerHeight
-     }
+    });
 
-    // IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
-     else if (typeof document.documentElement != 'undefined' && typeof document.documentElement.clientWidth != 'undefined' && document.documentElement.clientWidth !== 0) {
-        viewPortWidth = document.documentElement.clientWidth,
-        viewPortHeight = document.documentElement.clientHeight
-     }
+    socket.on("room:notcreated",function(){
+        clearTimeout(refreshtimer);
+    });
 
-     // older versions of IE
-     else {
-       viewPortWidth = document.getElementsByTagName('body')[0].clientWidth,
-       viewPortHeight = document.getElementsByTagName('body')[0].clientHeight
-     }
+    function getContainer() {
 
-     return [viewPortWidth, viewPortHeight];
+        var parent = $(".board #row1 .appel .appel--content");
+        var w =parent.width();
+        var h =parent.height();
+        return [w, h];
     }
 
 

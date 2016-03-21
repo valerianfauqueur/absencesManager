@@ -167,6 +167,39 @@ var database_manager = {
                 });
             }
         });
+    },
+
+    getAbsences: function(username)
+    {
+        return new Promise(function(resolve,reject){
+
+            var query = {
+                username: username
+            }
+            Account.find(query, function(err,result){
+            if(err)
+            {
+                console.log(err);
+                reject(false);
+            }
+            var absences = [];
+            for(var i =0, l = result[0].state.length;i<l;i++)
+            {
+                if(result[0].state[i].state === "Conflict" || result[0].state[i].state === "waitingValidation" || result[0].state[i].state === "Absent")
+                {
+                    absences.push(result[0].state[i]);
+                }
+                if(result[0].state[i].hasConfirmedSomeone !== undefined)
+                {
+                    if(result[0].state[i].hasConfirmedSomeone === false)
+                    {
+                        absences.push(result[0].state[i]);
+                    }
+                }
+            }
+            resolve(absences);
+            });
+        });
     }
 }
 

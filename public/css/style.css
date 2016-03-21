@@ -1,163 +1,465 @@
-body
-{
-    background:#eee;
-    font-family:Helvetica,Arial;
-    font-size:14px;
-    width: 100%;
-    height: 100%;
-    background-color: #1f1f1f;
+body{
+    background-color: #66BB6A;
+    font-family: 'Open Sans', sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items: center;
+    font-size:18px;
 }
 
-form input
-{
-    background-color: transparent;
-    padding-left: 15px;
-    padding-top:20px;
-    padding-bottom:20px;
-    display: block;
-    width:300px;
-    margin-bottom: 10px;
-    color:white;
-    border-radius: 10px;
-    border: 2px solid white;
-    font-size: 18px;
+.container{
+    width: 97vw;
+    height: 95vh;
+    background-color: #ffffff;
+    border-radius: 3px;
+    box-shadow: 0 1px 10px #656565;
+    margin-top: 20px;
 }
 
-.center
+.full
 {
-    position: absolute;
-    top:50%;
-    left:50%;
-    transform: translate(-50%,-50%);
-}
-
-.logo
-{
-    background-image: url("../img/logo.png");
-    background-size: cover;
-    height:75px;
-    width:80px;
-    margin:auto;
-    margin-bottom: 50px;
-
-}
-
-form input[type="submit"]
-{
-    background-color:#1a9f57;
-    color:white;
-    height: 50px;
-    border-radius: 5px;
-    font-size: 18px;
-    padding: 0px 0px;
-    line-height: 50px;
-    border:none;
-}
-
-form a
-{
-    position: absolute;
-    right: 0;
-    color:white;
-
-}
-
-form select
-{
-    background-color:white;
-    width:200px;
-    height:20px;
-    margin-bottom: 10px;
-}
-
- form input.ng-dirty.ng-valid
-{
-    border:2px solid green;
-}
-
-
-form input.ng-dirty.ng-invalid
-{
-    border:2px solid #de5500;
-}
-
-.error {
-    background-color: red;
-    color:white;
-    font-family: "Arial",sans-serif;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-
-/*NAV BAR*/
-
-nav
-{
-    height: 60px;
     width:100%;
-    background-color: #1a9f57;
+    height: 85%;
 }
 
-nav ul
-{
-    height: inherit;
-    display: flex;
-    flex-flow: row wrap;
-    align-items:center;
-    justify-content: space-between;
-    margin-left:20px;
-    margin-right:20px;
-    list-style: none;
-}
 
-nav ul li
-{
-    margin-right:20px;
-}
-
-.flexend {
-    margin-left:auto;
-    display: block;
-}
-
-nav ul li
-{
-    color:white;
-}
-
-/*HOME*/
-h2
-{
-    color:white;
-    font-size:48px;
-    font-family: "Arial",sans-serif;
-    text-align: center;
-}
-
-.course-info {
+/*LOGIN START*/
+.container .main-content {
+    height: 115%;
+    width:100%;
     display: flex;
     flex-direction: column;
-    align-items:center;
+    align-items: center;
+    justify-content: center;
 }
 
-canvas
-{
-    background-color: white;
+.main-content .login {
+    height: 100%;
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.message
+.main-content .login .title {
+    display: flex;
+    height: 20%;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-start;
+    font-family: "Open Sans", "Arial", sans-serif;
+    text-align: left;
+}
+.main-content .login .title h2
 {
-    color:white;
-    font-size:24px;
-    font-family: "Arial",sans-serif;
+    font-size:7em;
+    font-weight: lighter;
+    margin-bottom:10px;
+}
+.main-content .login .title p
+{
+    font-size:1.8em;
+    padding-left:0.3em;
+}
+
+.main-content .login form
+{
+    margin-top:50px;
+    display: flex;
+    height: 35%;
+    width:40%;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    font-size:1.8em;
+}
+
+.main-content .login form input
+{
+    width:95%;
+    height: 1.5em;
+    border-bottom: 2px solid black;
+}
+
+.main-content .login form .validate{
+    width:50%;
+    height: 25%;
+    cursor:pointer;
     text-align: center;
+    background-color: #66BB6A;
+    border-radius:2px;
+    border-bottom: 4px solid #3E8D41;
+    color:#ffffff;
+    font-weight: bold;
 }
 
-#countdown
+/*
+    END LOGIN
+*/
+
+/*
+    START HEADER
+*/
+
+header
 {
-    color:#1a9f57;
-    font-family: "Arial",sans-serif;
+    display:flex;
+    justify-content: center;
+    width:100%;
+    height: 15%;
+    flex-direction: row;
+    padding-top:20px;
+}
+
+header .informations{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+}
+header .informations h2{
+    font-size: 3em;
+    font-weight: 200;
+}
+
+header .informations .profile{
+    display: flex;
+    justify-content:space-around;
+    align-items: center;
+    position:relative;
+    right: 0;
+}
+
+header .informations .profile .picture{
+    display: flex;
+    background:black;
+    height: 75px;
+    width:75px;
+}
+
+header .informations .name--profile{
+    font-size: 25px;
+    margin-right: 20px;
+    position: absolute;
+    right: 75px;
+    top:10px;
+    width:auto;
+}
+
+header .informations .day
+{
+    font-size:1.4em;
+}
+header #logo
+{
+    background-image: url(../img/BEPRESENT.png);
+    background-size:cover;
+    width:200px;
+    height:86px;
+    margin-right:100px;
+}
+
+
+/*
+    HOME
+*/
+
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    overflow: hidden;
+}
+.board{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+    width:90%;
+    height: 95%;
+}
+
+.board #row1
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width:90%;
+    height: 45%;
+}
+
+.board #row1.complete {
+    width:90%;
+    height: 100%
+}
+
+.board #row1 .appel{
+    display:flex;
+    background:#EF5350;
+    width:100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.board .appel .appel--content{
+    display:flex;
+    background:#FFFFFF;
+    height:90%;
+    width:97%;
+    justify-content: space-around;
+    padding: 25px 25px;
+    align-items: center;
+    box-shadow: 0 1px 10px #656565;
+    flex-direction: column;
+}
+
+.board .appel .appel--content.lessborder {
+    height: 95%;
+    width:97%;
+}
+
+.board #row2
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width:90%;
+    height: 45%;
+}
+
+.board .justify{
+    display: flex;
+    background:#7986CB;
+    width:100%;
+    height:100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.board .justify .justify--content{
+    display:flex;
+    background:#FFFFFF;
+    height:92%;
+    width:94%;
+    justify-content: space-around;
+    padding: 25px 25px;
+    align-items: center;
+    box-shadow: 0 1px 10px #656565;
+    flex-direction: column;
+}
+
+.board .planning{
+    display: flex;
+    background:#80CBC4;
+    width:100%;
+    height:100%;
+    justify-content: center;
+    align-items: center;
+    margin-left: 2%;
+}
+
+.board .planning .planning--content{
+    display:flex;
+    background:#FFFFFF;
+    height:92%;
+    width:94%;
+    justify-content: space-around;
+    padding: 25px 25px;
+    align-items: center;
+    box-shadow: 0 1px 10px #656565;
+    flex-direction:column;
+}
+
+.home-container .board button{
+    display:flex;
+    justify-content: center;
+    cursor:pointer;
+    text-align:center;
+    border-radius: 2px;
     font-weight: bold;
+    height: 2.25em;
+    color:white;
+    min-width: 100px;
+    min-height: 30px;
+    box-shadow: 0 1px 2px #656565;
+ }
+
+.board .justify--button, .planning--button{
+    width:30%;
+}
+
+.board .appel .appel--content .appel--button{
+    background:#EF5350;
+    border-bottom: 4px solid #B13127;
+    width:20%;
+    height:2.5em;
+    min-width: 130px;
     font-size: 18px;
 }
+
+.board .justify .justify--content .justify--button{
+    background:#7986CB;
+    border-bottom: 4px solid #4B589D;
+}
+
+.board .planning .planning--content .planning--button{
+    background:#80CBC4;
+    border-bottom: 4px solid #619A95;
+}
+
+.board h3{
+    font-size: 45px;
+    font-weight: 200;
+}
+
+.board .subtitle{
+    font-size: 30px;
+    font-weight: 300;
+}
+
+/*
+    APPEL
+*/
+
+.board #row1 .appel .message {
+    font-size:2em;
+    margin-bottom: 10px;
+}
+
+.board #row1 .appel h2
+{
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size: 3em;
+    display: inline-block;
+}
+
+.board #row1 .appel h3 #validatebtn
+{
+    background-color:#46a24a;
+    color:white;
+    display: inline-block;
+    width:50px;
+    height: 40px;
+}
+
+.board #row1 .appel h3 #conflictbtn
+{
+    background-color:#e9514e;
+    color:white;
+    display: inline-block;
+    width:50px;
+    height: 40px;
+}
+
+.board #row1 .appel .step2 {
+    display: none;
+}
+
+.board #row1 .appel .step1 #countdown {
+    display: inline-block;
+    font-size:2.5em;
+    margin-left:10px;
+}
+
+.board #row1 .appel .step2 .message
+{
+    text-align: center;
+    font-size:4em;
+    margin-bottom:20px;
+}
+.board #row1 .appel .step2 .status
+{
+    text-align: center;
+    font-size:2em;
+    margin-bottom:20px;
+}
+
+.board #row1 .appel .step2 .refresh
+{
+    text-align: center;
+    font-size:2em;
+}
+
+/*
+    PLANNING
+*/
+
+.board #row2.complete {
+    width:90%;
+    height: 100%
+}
+
+.board .planning .planning--content.lessborder {
+    height: 95%;
+    width:97%;
+    justify-content: flex-start;
+}
+.board .planning .planning--content.lessborder h2 {
+    font-size:4em;
+    margin-bottom: 5%;
+}
+
+.board .planning .planning--content table{
+    height: 60%;
+    width:80%;
+}
+.board .planning .planning--content table th{
+    background-color: #7ec8c1;
+    text-align: center;
+    vertical-align: middle;
+    border: 2px solid #609893;
+}
+
+.board .planning .planning--content table td{
+    vertical-align: middle;
+    padding-left:20px;
+    border: 2px solid #609893;
+    border-right:0px;
+}
+.board .planning .planning--content table td.hour{
+    border:0px;
+    border-top:2px solid #609893;
+    border-bottom:2px solid #609893;
+}
+.board .planning .planning--content table td.hour.last{
+    border-right:2px solid #609893;
+}
+
+/*
+    Justify
+*/
+
+.board .justify .justify--content.lessborder {
+    height: 95%;
+    width:97%;
+    justify-content: flex-start;
+}
+.board .justify .justify--content.lessborder h2 {
+    font-size:4em;
+    margin-bottom: 5%;
+}
+
+.board .justify .justify--content table{
+    height: 60%;
+    width:80%;
+}
+.board .justify .justify--content table th{
+    background-color: #7ec8c1;
+    text-align: center;
+    vertical-align: middle;
+    border: 2px solid #609893;
+}
+
+.board .justify .justify--content table td{
+    vertical-align: middle;
+    padding-left:20px;
+    border: 2px solid #609893;
+}
+
+

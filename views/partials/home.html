@@ -1,8 +1,32 @@
-<div ng-controller="navController as navCtrl" ng-init="absenceCtrl.getData()">
-   <div class="course-info" ng-show="navCtrl.isFormStep(1)">
-        <h2>Bonjour, {{account.firstname}}<br>
-        {{currentCourse}}</h2>
-        <button type="button"  id="startbtn" class="btn btn-primary btn-lg" ng-class="{disabled: !account.currentCourse}" ng-click="navCtrl.setFormStep(2,$event);absenceCtrl.joinList()">Valider ma présence</button>
+<div ng-init="navCtrl.getData()" class="home-container">
+    <nav class="board">
+       <div id="row1">
+            <section class="appel">
+                <section class="appel--content">
+                        <h3 class="text">Salut <span class="name">{{account.firstname}}</span> !</h3>
+                        <p class="subtitle text">{{currentCourse}}</p>
+                        <button class="appel--button text" ng-click="navCtrl.joinList();navCtrl.homeToAppel()">TOUT À FAIT</button>
+                </section>
+            </section>
+        </div>
+        <div id="row2">
+            <section class="justify">
+                <section class="justify--content">
+                        <h3 class="text">Vos papiers.</h3>
+                        <p class="subtitle text">Des absences à justifier ?</p>
+                        <button class="justify--button text" ng-click="navCtrl.homeToJustify()">JE JUSTIFIE</button>
+                </section>
+            </section>
+            <section class="planning">
+                <section class="planning--content">
+                        <h3 class="text">Mon planning</h3>
+                        <p class="subtitle text">Quand ? Quoi ? Où ?</p>
+                        <button class="planning--button text" ng-click="navCtrl.homeToPlanning()">JE VÉRIFIE</button>
+                </section>
+            </section>
+        </div>
+    </nav>
+    <div class="modal">
         <div data-remodal-id="course-does-not-exist">
             <button data-remodal-action="close" class="remodal-close"></button>
             <h1>Erreur</h1>
@@ -26,18 +50,5 @@
                 La période de vérification est terminé.
             </p>
         </div>
-    </div>
-
-    <div class="course-info" ng-show="navCtrl.isFormStep(2)">
-       <h3 class="message"></h3>
-       <p id="countdown"></p>
-        <canvas width="800" height="600">
-            Votre navigateur ne supporte pas canvas
-        </canvas>
-    </div>
-
-    <div class="course-info" ng-show="navCtrl.isFormStep(3)">
-        <h2>Bonjour,<br> vous êtes actuellement en cours de :<br>Ingénieurie informatique</h2>
-        <button type="button" class="btn btn-primary btn-lg">Valider ma présence</button>
     </div>
 </div>

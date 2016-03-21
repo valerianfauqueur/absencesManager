@@ -52,7 +52,7 @@ passport.deserializeUser(Account.deserializeUser());
 //mongodb://localhost/absencesApp
 //db connection
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://heroku_mfth0m01:doiu6n1ep3fmd4cjdr6l0t6vt8@ds031952.mlab.com:31952/heroku_mfth0m01', function(err) {
+mongoose.connect('mongodb://localhost/absencesApp', function(err) {
     if(err) {
         console.log('connection error', err);
     } else {
@@ -193,6 +193,21 @@ io.on('connection',function(socket){
             socket.emit("room:notcreated");
         }
     });
+
+    socket.on("room:checkstatus",function(user){
+        var group = user.group.substr(0,2);
+        var roomName = user.promotion + group;
+        var roomExist = rooms_manager.roomExist(roomName);
+        if(roomExist)
+        {
+            var getuser = rooms_manager.getUser(roomName,user.username);
+            socket.emit("room:status",getuser.state);
+        }
+        else
+        {
+            socket.emit("room:notcreated");
+        }
+    });
 });
 
 
@@ -213,8 +228,8 @@ var registerTimedFunction = function()
                     step = shedule[promo][day][course].step;
                     var date = new Date();
                     console.log(date);
-                    date.setHours(15);
-                    date.setMinutes(50);
+                    date.setHours(7);
+                    date.setMinutes(51);
                     date.setSeconds(0)
                     console.log(date);
                     new CronJob({
@@ -230,7 +245,7 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(51);
+                    date.setSeconds(30);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
@@ -245,7 +260,6 @@ var registerTimedFunction = function()
 
                             for(var d =0, l = numberOfUserToValidate.length; d < l ;d++)
                             {
-                                console.log("nombre d'util à validé "+numberOfUserToValidate.length);
                                 var myUserToValidate = rooms_manager.getTheUserToValidate(roomName,numberOfUserToValidate[d].username);
                                 console.log("my user to validate "+ myUserToValidate);
                                 if(myUserToValidate === numberOfUserToValidate[d].username)
@@ -269,7 +283,7 @@ var registerTimedFunction = function()
                             {
                                var sendUserToValidate = rooms_manager.getTheUserToValidate(roomName,numberOfUserToValidate[p].username);
                                console.log("send this "+sendUserToValidate);
-                               console.log("à "+numberOfUserToValidate[p].socketid+" "+numberOfUserToValidate[p].username);
+                               console.log("à "+numberOfUserToValidate[p].username);
                                var userToSend = rooms_manager.getUser(roomName, sendUserToValidate);
                                rooms_manager.setUserState(roomName,sendUserToValidate,"waitingValidation");
                                io.to(numberOfUserToValidate[p].socketid).emit("room:usertocheck",userToSend);
@@ -282,12 +296,14 @@ var registerTimedFunction = function()
                         start: true,
                         timeZone: 'Europe/Paris'
                     });
-                    date.setMinutes(53);
+                    date.setSeconds(59);
                     new CronJob({
                         cronTime: date,
                         onTick: function(group,promotion){
+
                             var roomName = promotion + group;
                             var users = rooms_manager.getUsers(roomName);
+                            console.log(users[0]);
                             database_manager.registerUsersCheckIn(users,group,promotion);
                             this.stop();
                         }.arg(group,promotion),

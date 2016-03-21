@@ -5,6 +5,9 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$rootScope', '$
         // create user variable
         var user = null;
         var admin = null;
+        var scope = $rootScope;
+        scope.account = {};
+        var voyelles = ["a","e","i","o","u","y"];
 
         function isLoggedIn() {
             if (user) {
@@ -111,7 +114,49 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$rootScope', '$
             return defered.promise;
         }
 
-
+    function getData()
+    {
+        var deferred = $q.defer();
+        $http.get("/data")
+            .success(function(data) {
+                if(data)
+                {
+                    scope.account.currentCourse = data.course;
+                    if(data.course === false)
+                    {
+                      scope.currentCourse = "Pas ce cours pour le moment, met toi à l'aise !";
+                    }
+                    else
+                    {
+                        console.log(data);
+                        if(voyelles.indexOf(data.course.charAt(0)))
+                        {
+                            scope.currentCourse = "Tu dois être en cours d'"+data.course+" non ?";
+                        }
+                        else
+                        {
+                            scope.currentCourse = "Tu dois être en cours de "+data.course+" non ?";
+                        }
+                    }
+                    scope.account.promotion = data.account.promotion;
+                    scope.account.username = data.account.username;
+                    var getname2 = data.account.username.split("@");
+                    var getname = getname2[0].split(".");
+                    scope.account.firstname = getname[0].charAt(0).toUpperCase() +getname[0].slice(1);
+                    scope.account.lastname = getname[1].charAt(0).toUpperCase() +getname[1].slice(1);
+                    scope.account.group = data.account.group;
+                    deferred.resolve(data);
+                }
+            })
+            .error(function(data) {
+                scope.currentCourse = "Could not get data";
+                scope.account.promotion = false;
+                scope.account.username = false;
+                scope.account.group = false;
+                deferred.reject(data);
+            })
+        return deferred.promise;
+    }
 
         // return available functions for use in the controllers
         return ({
@@ -119,7 +164,9 @@ angular.module('absencesManager').factory('AuthService', ['$q', '$rootScope', '$
             login: login,
             logout: logout,
             isAdmin: isAdmin,
-            isLoggedIn: isLoggedIn
+            isLoggedIn: isLoggedIn,
+            getData: getData
+
         });
 
 }]);

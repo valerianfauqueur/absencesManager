@@ -1,0 +1,19 @@
+   <div class="course-info" ng-show="navCtrl.isFormStep(1)">
+        <h2>Bonjour, {{account.firstname}}<br>
+        {{currentCourse}}</h2>
+        <button type="button"  id="startbtn" class="btn btn-primary btn-lg" ng-class="{disabled: !account.currentCourse}" ng-click="navCtrl.setFormStep(2,$event);absenceCtrl.joinList()">Valider ma présence</button>
+
+    </div>
+
+    <div class="course-info" ng-show="navCtrl.isFormStep(2)">
+       <h3 class="message"></h3>
+       <p id="countdown"></p>
+        <canvas width="800" height="600">
+            Votre navigateur ne supporte pas canvas
+        </canvas>
+    </div>
+
+    <div class="course-info" ng-show="navCtrl.isFormStep(3)">
+        <h2>Bonjour,<br> vous êtes actuellement en cours de :<br>Ingénieurie informatique</h2>
+        <button type="button" class="btn btn-primary btn-lg">Valider ma présence</button>
+    </div>

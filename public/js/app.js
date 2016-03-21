@@ -8,8 +8,8 @@ angular.module('absencesManager', ["ngRoute"]).
     $routeProvider
         .when("/", {
             templateUrl:"partials/home.html",
-            controller:"absenceController",
-            controllerAs:"absenceCtrl",
+            controller:"navController",
+            controllerAs:"navCtrl",
             access: {restricted: false}
         })
         .when("/login", {
@@ -26,6 +26,22 @@ angular.module('absencesManager', ["ngRoute"]).
         })
         .when("/logout", {
             controller:"logoutController",
+            access: {restricted: false}
+        })
+        .when("/appel", {
+            templateUrl: "partials/appel.html",
+            controller:"absenceController",
+            controllerAs:"absenceCtrl",
+            access: {restricted: false}
+        })
+        .when("/justify", {
+            templateUrl: "partials/justify.html",
+            controller:"justifyController",
+            controllerAs:"justifyCtrl",
+            access: {restricted: false}
+        })
+        .when("/planning", {
+            templateUrl: "partials/planning.html",
             access: {restricted: false}
         })
   }]);

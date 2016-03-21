@@ -131,6 +131,22 @@ router.get('/data', function(req, res) {
     }
 });
 
+router.get('/myabsences', function(req, res) {
+    if(req.isAuthenticated())
+    {
+        var db = database_manager.getAbsences(req.session.passport.user);
+        db.then(function(data){
+            res.status(200).json({
+                absences:data
+            });
+        });
+    }
+    else
+    {
+        res.redirect("/");
+    }
+});
+
 router.get("/", function(req, res){
   res.sendFile("index.html", {root: "./views"});
 });
